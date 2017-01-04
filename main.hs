@@ -12,7 +12,7 @@ data LispVal
     | Number Integer
     | String String
     | Bool Bool
-
+    deriving (Show)
 
 main :: IO ()
 main =
@@ -28,7 +28,7 @@ symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
     Left err -> "No match: " ++ show err
-    Right _ -> "Found value"
+    Right x -> "Found value" ++ show x
 
 
 spaces :: Parser ()
