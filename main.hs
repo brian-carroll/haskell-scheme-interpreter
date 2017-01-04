@@ -65,4 +65,7 @@ parseAtom =
 
 parseNumber :: Parser LispVal
 parseNumber =
-    liftM (Number . read) $ many1 digit
+    do
+        numStr <- many1 digit
+        let num = read numStr
+        return $ Number num
