@@ -28,6 +28,7 @@ symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
     Left err -> "No match: " ++ show err
+    Right (String x) -> "Found string value:\n" ++ x
     Right x -> "Found value" ++ show x
 
 
@@ -35,12 +36,18 @@ spaces :: Parser ()
 spaces = skipMany1 space
 
 
-escapedQuote :: Parser Char
-escapedQuote =
+escapedChar :: Parser Char
+escapedChar =
     do
         char '\\'
-        char '"'
-        return '"'
+        x <- oneOf "tnr\"\\"
+        return $
+            case x of
+                '"' -> '"'
+                '\\' -> '\\'
+                't' -> '\t'
+                'n' -> '\n'
+                'r' -> '\r'
 
 
 parseExpr :: Parser LispVal
@@ -53,7 +60,7 @@ parseString :: Parser LispVal
 parseString =
     do
         char '"'
-        x <- many (escapedQuote <|> (noneOf "\""))
+        x <- many (escapedChar <|> (noneOf "\""))
         char '"'
         return $ String x
 
