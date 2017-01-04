@@ -4,4 +4,4 @@ import System.Environment
 main :: IO ()
 main = do
     args <- getArgs
-    putStrLn ( (args !! 0)  ++ ", " ++ (args !! 1))
+    putStrLn $ show $ sum $ map read args
