@@ -35,6 +35,14 @@ spaces :: Parser ()
 spaces = skipMany1 space
 
 
+escapedQuote :: Parser Char
+escapedQuote =
+    do
+        char '\\'
+        char '"'
+        return '"'
+
+
 parseExpr :: Parser LispVal
 parseExpr = parseAtom
          <|> parseString
@@ -45,7 +53,7 @@ parseString :: Parser LispVal
 parseString =
     do
         char '"'
-        x <- many (noneOf "\"")
+        x <- many (escapedQuote >> (noneOf "\""))
         char '"'
         return $ String x
 
