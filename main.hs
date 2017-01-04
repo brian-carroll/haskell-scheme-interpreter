@@ -3,5 +3,6 @@ import System.Environment
 
 main :: IO ()
 main = do
-    args <- getArgs
-    putStrLn $ show $ sum $ map read args
+    putStrLn "I am a robot. What is your name?"
+    userInput <- getLine
+    putStrLn ("Hello, " ++ userInput)
