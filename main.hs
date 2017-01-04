@@ -53,7 +53,7 @@ parseString :: Parser LispVal
 parseString =
     do
         char '"'
-        x <- many (escapedQuote >> (noneOf "\""))
+        x <- many (escapedQuote <|> (noneOf "\""))
         char '"'
         return $ String x
 
