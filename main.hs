@@ -162,8 +162,12 @@ readBin str =
 
 
 readBinHelp :: Char -> (Integer, Integer) -> (Integer, Integer)
-readBinHelp char (value, bitWeight) =
-    if char == '1' then
-        ( value+bitWeight, 2*bitWeight )
-    else
-        ( value, 2*bitWeight )
+readBinHelp char (acc, bitWeight) =
+    let
+        bitValue =
+            if char == '1' then
+                bitWeight
+            else
+                0
+    in
+        ( acc+bitValue, 2*bitWeight )
