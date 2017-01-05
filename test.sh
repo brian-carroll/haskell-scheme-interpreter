@@ -15,19 +15,26 @@ function ignore_first_line() {
 }
 
 
-./simple_parser '25' | ignore_first_line | should_be 'Number 25' || exit
+function simple_parser_test {
+    ./simple_parser "$1" | ignore_first_line | should_be "$2" || exit
+}
 
-./simple_parser '#x10' | ignore_first_line | should_be 'Number 16' || exit
-./simple_parser '#o10' | ignore_first_line | should_be 'Number 8' || exit
-./simple_parser '#d10' | ignore_first_line | should_be 'Number 10' || exit
-./simple_parser '#b10' | ignore_first_line | should_be 'Number 2' || exit
 
-./simple_parser '"hello world"' | ignore_first_line | should_be 'hello world' || exit
-./simple_parser '"hello \"world\""' | ignore_first_line | should_be 'hello "world"' || exit
+simple_parser_test '25' 'Number 25' || exit
 
-./simple_parser 'abc' | ignore_first_line | should_be 'Atom "abc"' || exit
+simple_parser_test '#x10' 'Number 16' || exit
+simple_parser_test '#o10' 'Number 8' || exit
+simple_parser_test '#d10' 'Number 10' || exit
+simple_parser_test '#b10' 'Number 2' || exit
 
-# ./simple_parser '#\newline' | ignore_first_line | should_be "Character '\n'" || exit
-# ./simple_parser '#\a' | ignore_first_line | should_be "Character 'a'" || exit
+simple_parser_test '"hello world"' 'hello world' || exit
+simple_parser_test '"hello \"world\""' 'hello "world"' || exit
+
+simple_parser_test 'abc' 'Atom "abc"' || exit
+
+# simple_parser_test '#\newline' "Character '\n'" || exit
+# simple_parser_test '#\a' "Character 'a'" || exit
+
+
 
 echo "All tests passed"
