@@ -21,33 +21,11 @@ main =
         putStrLn (readExpr expr)
 
 
-symbol :: Parser Char
-symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
-
-
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
     Left err -> "No match: " ++ show err
     Right (String x) -> "Found string value:\n" ++ x
     Right x -> "Found value" ++ show x
-
-
-spaces :: Parser ()
-spaces = skipMany1 space
-
-
-escapedChar :: Parser Char
-escapedChar =
-    do
-        char '\\'
-        x <- oneOf "tnr\"\\"
-        return $
-            case x of
-                '"' -> '"'
-                '\\' -> '\\'
-                't' -> '\t'
-                'n' -> '\n'
-                'r' -> '\r'
 
 
 parseExpr :: Parser LispVal
@@ -84,3 +62,25 @@ parseNumber =
         numStr <- many1 digit
         let num = read numStr
         return $ Number num
+
+
+symbol :: Parser Char
+symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
+
+
+spaces :: Parser ()
+spaces = skipMany1 space
+
+
+escapedChar :: Parser Char
+escapedChar =
+    do
+        char '\\'
+        x <- oneOf "tnr\"\\"
+        return $
+            case x of
+                '"' -> '"'
+                '\\' -> '\\'
+                't' -> '\t'
+                'n' -> '\n'
+                'r' -> '\r'
