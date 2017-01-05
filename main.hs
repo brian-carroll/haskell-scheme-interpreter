@@ -3,6 +3,7 @@ module Main where
 import System.Environment
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Control.Monad
+import Numeric (readOct, readHex)
 
 
 -- -----
@@ -32,7 +33,7 @@ readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
     Left err -> "No match: " ++ show err
     Right (String x) -> "Found string value:\n" ++ x
-    Right x -> "Found value" ++ show x
+    Right x -> "Found value: " ++ show x
 
 
 -- ------------------
@@ -40,9 +41,9 @@ readExpr input = case parse parseExpr "lisp" input of
 -- ------------------
 
 parseExpr :: Parser LispVal
-parseExpr = parseAtom
+parseExpr = parseNumber
          <|> parseString
-         <|> parseNumber
+         <|> parseAtom
 
 
 parseString :: Parser LispVal
@@ -70,9 +71,8 @@ parseAtom =
 parseNumber :: Parser LispVal
 parseNumber =
     do
-        numStr <- many1 digit
-        let num = read numStr
-        return $ Number num
+        value <- (radixNumber <|> plainNumber)
+        return $ Number value
 
 
 -- ------------------
@@ -99,3 +99,28 @@ escapedChar =
                 't' -> '\t'
                 'n' -> '\n'
                 'r' -> '\r'
+
+
+plainNumber :: Parser Integer
+plainNumber =
+    do
+        numStr <- many1 digit
+        let value = read numStr
+        return value
+
+
+radixNumber :: Parser Integer
+radixNumber =
+    do
+        value <- hexNumber
+        return value
+
+
+hexNumber :: Parser Integer
+hexNumber =
+    do
+        char '#'
+        oneOf "Xx"
+        numStr <- many1 $ oneOf "0123456789abcdefABCDEF"
+        let [(value, _)] = readHex numStr
+        return value
