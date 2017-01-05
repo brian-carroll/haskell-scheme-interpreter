@@ -4,6 +4,7 @@ import System.Environment
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Control.Monad
 import Numeric (readOct, readHex)
+import qualified Data.Char
 
 
 -- -----
@@ -15,6 +16,7 @@ data LispVal
     | DottedList [LispVal] LispVal
     | Number Integer
     | String String
+    | Character Char
     | Bool Bool
     deriving (Show)
 
@@ -33,7 +35,7 @@ readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
     Left err -> "No match: " ++ show err
     Right (String x) -> "Found string value:\n" ++ x
-    Right x -> "Found value: " ++ show x
+    Right x -> "Found value:\n" ++ show x
 
 
 -- ------------------
@@ -41,8 +43,9 @@ readExpr input = case parse parseExpr "lisp" input of
 -- ------------------
 
 parseExpr :: Parser LispVal
-parseExpr = parseNumber
-         <|> parseString
+parseExpr = parseString
+         <|> (try parseCharacter)
+         <|> (try parseNumber)
          <|> parseAtom
 
 
@@ -53,6 +56,15 @@ parseString =
         x <- many (escapedChar <|> (noneOf "\""))
         char '"'
         return $ String x
+
+
+parseCharacter :: Parser LispVal
+parseCharacter =
+    do
+        char '#'
+        char '\\'
+        c <- (try characterName <|> anyChar)
+        return $ Character c
 
 
 parseAtom :: Parser LispVal
@@ -171,3 +183,29 @@ readBinHelp char (acc, bitWeight) =
                 0
     in
         ( acc+bitValue, 2*bitWeight )
+
+
+characterName :: Parser Char
+characterName =
+    do
+        first <- letter
+        rest <- many1 $ letter
+        let name = map Data.Char.toLower (first:rest)
+
+        -- http://sicp.ai.mit.edu/Fall-2003/manuals/scheme-7.5.5/doc/scheme_6.html
+        let c = case name of
+                    "altmode" -> '\ESC'
+                    "backnext" -> '\US'
+                    "backspace" -> '\BS'
+                    "call" -> '\SUB'
+                    "linefeed" -> '\LF'
+                    "newline" -> '\LF'
+                    "page" -> '\FF'
+                    "return" -> '\CR'
+                    "rubout" -> '\DEL'
+                    "tab" -> '\HT'
+                    "space" -> ' '
+                    _ -> '_'
+
+        when (c=='_') (unexpected ("character name '" ++ name ++ "'"))
+        return c

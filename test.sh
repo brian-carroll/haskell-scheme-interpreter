@@ -32,8 +32,8 @@ simple_parser_test '"hello \"world\""' 'hello "world"' || exit
 
 simple_parser_test 'abc' 'Atom "abc"' || exit
 
-# simple_parser_test '#\newline' "Character '\n'" || exit
-# simple_parser_test '#\a' "Character 'a'" || exit
+simple_parser_test '#\newline' "Character '\n'" || exit
+simple_parser_test '#\a' "Character 'a'" || exit
 
 
 
