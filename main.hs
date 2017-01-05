@@ -112,15 +112,33 @@ plainNumber =
 radixNumber :: Parser Integer
 radixNumber =
     do
-        value <- hexNumber
+        char '#'
+        value <- (hexNumber <|> octalNumber <|> decimalNumber)
         return value
 
 
 hexNumber :: Parser Integer
 hexNumber =
     do
-        char '#'
         oneOf "Xx"
         numStr <- many1 $ oneOf "0123456789abcdefABCDEF"
         let [(value, _)] = readHex numStr
+        return value
+
+
+octalNumber :: Parser Integer
+octalNumber =
+    do
+        oneOf "Oo"
+        numStr <- many1 $ oneOf "01234567"
+        let [(value, _)] = readOct numStr
+        return value
+
+
+decimalNumber :: Parser Integer
+decimalNumber =
+    do
+        oneOf "Dd"
+        numStr <- many1 $ digit
+        let value = read numStr
         return value
