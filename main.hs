@@ -113,7 +113,7 @@ radixNumber :: Parser Integer
 radixNumber =
     do
         char '#'
-        value <- (hexNumber <|> octalNumber <|> decimalNumber)
+        value <- (hexNumber <|> octalNumber <|> decimalNumber <|> binaryNumber)
         return value
 
 
@@ -142,3 +142,28 @@ decimalNumber =
         numStr <- many1 $ digit
         let value = read numStr
         return value
+
+
+binaryNumber :: Parser Integer
+binaryNumber =
+    do
+        oneOf "Bb"
+        numStr <- many1 $ oneOf "01"
+        let value = readBin numStr
+        return value
+
+
+readBin :: String -> Integer
+readBin str =
+    let
+        (value, _) = foldr readBinHelp (0,1) str
+    in
+        value
+
+
+readBinHelp :: Char -> (Integer, Integer) -> (Integer, Integer)
+readBinHelp char (value, bitWeight) =
+    if char == '1' then
+        ( value+bitWeight, 2*bitWeight )
+    else
+        ( value, 2*bitWeight )
