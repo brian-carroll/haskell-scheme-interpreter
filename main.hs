@@ -5,6 +5,9 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import Control.Monad
 
 
+-- -----
+-- TYPES
+-- -----
 data LispVal
     = Atom String
     | List [LispVal]
@@ -14,6 +17,10 @@ data LispVal
     | Bool Bool
     deriving (Show)
 
+
+-- ----
+-- MAIN
+-- ----
 main :: IO ()
 main =
     do
@@ -27,6 +34,10 @@ readExpr input = case parse parseExpr "lisp" input of
     Right (String x) -> "Found string value:\n" ++ x
     Right x -> "Found value" ++ show x
 
+
+-- ------------------
+-- HIGH LEVEL PARSING
+-- ------------------
 
 parseExpr :: Parser LispVal
 parseExpr = parseAtom
@@ -63,6 +74,10 @@ parseNumber =
         let num = read numStr
         return $ Number num
 
+
+-- ------------------
+-- LOW-LEVEL PARSING
+-- ------------------
 
 symbol :: Parser Char
 symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
