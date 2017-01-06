@@ -16,44 +16,44 @@ function ignore_first_line() {
 }
 
 
-function simple_parser_test {
-    ./simple_parser "$1" | ignore_first_line | should_be "$2" || exit
+function parser_test {
+    ./parser "$1" | ignore_first_line | should_be "$2" || exit
 }
 
 
 
 # Numbers
-simple_parser_test '25' '25' || exit
-simple_parser_test '#x10' '16' || exit
-simple_parser_test '#o10' '8' || exit
-simple_parser_test '#d10' '10' || exit
-simple_parser_test '#b10' '2' || exit
+parser_test '25' '25' || exit
+parser_test '#x10' '16' || exit
+parser_test '#o10' '8' || exit
+parser_test '#d10' '10' || exit
+parser_test '#b10' '2' || exit
 
 # Strings
-simple_parser_test '"hello world"' '"hello world"' || exit
-simple_parser_test '"hello \"world\""' '"hello "world""' || exit
+parser_test '"hello world"' '"hello world"' || exit
+parser_test '"hello \"world\""' '"hello "world""' || exit
 
 # Atoms
-simple_parser_test 'abc' 'abc' || exit
+parser_test 'abc' 'abc' || exit
 
 # Characters
-simple_parser_test '#\a' '#\a' || exit
-simple_parser_test '(#\space)' "(#\ )" || exit
+parser_test '#\a' '#\a' || exit
+parser_test '(#\space)' "(#\ )" || exit
 
 # Lists
-simple_parser_test "(a test)" \
+parser_test "(a test)" \
     'List [Atom "a",Atom "test"]' \
     || exit
-simple_parser_test "(a (nested) test)" \
+parser_test "(a (nested) test)" \
     'List [Atom "a",List [Atom "nested"],Atom "test"]' \
     || exit
-simple_parser_test "(a (dotted . list) test)" \
+parser_test "(a (dotted . list) test)" \
     'List [Atom "a",DottedList [Atom "dotted"] (Atom "list"),Atom "test"]' \
     || exit
-simple_parser_test "(a '(quoted (dotted . list)) test)" \
+parser_test "(a '(quoted (dotted . list)) test)" \
     'List [Atom "a",List [Atom "quote",List [Atom "quoted",DottedList [Atom "dotted"] (Atom "list")]],Atom "test"]' \
     || exit
-simple_parser_test "(a '(imbalanced parens)" \
+parser_test "(a '(imbalanced parens)" \
     'unexpected end of input' \
     || exit
 
