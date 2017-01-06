@@ -11,13 +11,8 @@ function should_be() {
     fi
 }
 
-function ignore_first_line() {
-    tail -n +2
-}
-
-
 function parser_test {
-    ./parser "$1" | ignore_first_line | should_be "$2" || exit
+    ./eval "(quote $1)" | should_be "$2" || exit
 }
 
 
@@ -42,19 +37,21 @@ parser_test '(#\space)' "(#\ )" || exit
 
 # Lists
 parser_test "(a test)" \
-    'List [Atom "a",Atom "test"]' \
+    '(a test)' \
     || exit
 parser_test "(a (nested) test)" \
-    'List [Atom "a",List [Atom "nested"],Atom "test"]' \
+    '(a (nested) test)' \
     || exit
 parser_test "(a (dotted . list) test)" \
-    'List [Atom "a",DottedList [Atom "dotted"] (Atom "list"),Atom "test"]' \
+    '(a (dotted . list) test)' \
     || exit
 parser_test "(a '(quoted (dotted . list)) test)" \
-    'List [Atom "a",List [Atom "quote",List [Atom "quoted",DottedList [Atom "dotted"] (Atom "list")]],Atom "test"]' \
+    '(a (quote (quoted (dotted . list))) test)' \
     || exit
 parser_test "(a '(imbalanced parens)" \
-    'unexpected end of input' \
+'"No match: "lisp" (line 1, column 32):
+unexpected end of input
+expecting space or ")""' \
     || exit
 
 
