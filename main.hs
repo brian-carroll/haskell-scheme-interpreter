@@ -18,7 +18,22 @@ data LispVal
     | String String
     | Character Char
     | Bool Bool
-    deriving (Show)
+
+
+instance Show LispVal where show = showVal
+
+showVal :: LispVal -> String
+showVal (String contents) = "\"" ++ contents ++ "\""
+showVal (Atom name) = name
+showVal (Number contents) = show contents
+showVal (Bool True) = "#t"
+showVal (Bool False) = "#f"
+showVal (List contents) = "(" ++ unwordsList contents ++ ")"
+showVal (DottedList head tail) = "(" ++ unwordsList head ++ " . " ++ showVal tail ++ ")"
+showVal (Character c) = "#\\" ++ [c]
+
+unwordsList :: [LispVal] -> String
+unwordsList = unwords . map showVal
 
 
 -- ----
@@ -31,11 +46,15 @@ main =
         putStrLn (readExpr expr)
 
 
-readExpr :: String -> String
-readExpr input = case parse parseExpr "lisp" input of
-    Left err -> "No match: " ++ show err
-    Right (String x) -> "Found string value:\n" ++ x
-    Right x -> "Found value:\n" ++ show x
+-- readExpr :: String -> String
+-- readExpr input = case parse parseExpr "lisp" input of
+--     Left err -> "No match: " ++ show err
+--     Right (String x) -> "Found string value:\n" ++ x
+--     Right x -> "Found value:\n" ++ show x
+readExpr input =
+    case parse parseExpr "lisp" input of
+        Left err -> "No match:\n" ++ show err
+        Right val -> "Found:\n" ++ show val
 
 
 -- ------------------
