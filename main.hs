@@ -28,9 +28,9 @@ showVal (Atom name) = name
 showVal (Number contents) = show contents
 showVal (Bool True) = "#t"
 showVal (Bool False) = "#f"
+showVal (Character c) = "#\\" ++ [c]
 showVal (List contents) = "(" ++ unwordsList contents ++ ")"
 showVal (DottedList head tail) = "(" ++ unwordsList head ++ " . " ++ showVal tail ++ ")"
-showVal (Character c) = "#\\" ++ [c]
 
 unwordsList :: [LispVal] -> String
 unwordsList = unwords . map showVal
@@ -49,9 +49,13 @@ main =
 -- ----
 
 eval :: LispVal -> LispVal
+eval val@(Atom _) = val
 eval val@(String _) = val
 eval val@(Number _) = val
 eval val@(Bool _) = val
+eval val@(Character _) = val
+eval val@(DottedList head tail) = val
+eval val@(List []) = val
 eval (List [Atom "quote", val]) = val
 eval (List (Atom func : args)) = apply func $ map eval args
 
@@ -70,7 +74,43 @@ primitives =
     , ("mod", numericBinop mod)
     , ("quotient", numericBinop quot)
     , ("remainder", numericBinop rem)
+    , ("symbol?", typeCheckAtom)
+    , ("string?", typeCheckString)
+    , ("bool?", typeCheckBool)
+    , ("number?", typeCheckNumber)
+    , ("char?", typeCheckCharacter)
+    , ("list?", typeCheckList)
     ]
+
+
+typeCheckAtom :: [LispVal] -> LispVal
+typeCheckAtom (Atom _ : _) = Bool True
+typeCheckAtom _ = Bool False
+
+
+typeCheckString :: [LispVal] -> LispVal
+typeCheckString (String _ : _) = Bool True
+typeCheckString _ = Bool False
+
+
+typeCheckBool :: [LispVal] -> LispVal
+typeCheckBool (Bool _ : _) = Bool True
+typeCheckBool _ = Bool False
+
+
+typeCheckNumber :: [LispVal] -> LispVal
+typeCheckNumber (Number _ : _) = Bool True
+typeCheckNumber _ = Bool False
+
+
+typeCheckCharacter :: [LispVal] -> LispVal
+typeCheckCharacter (Character _ : _) = Bool True
+typeCheckCharacter _ = Bool False
+
+
+typeCheckList :: [LispVal] -> LispVal
+typeCheckList (List _ : _) = Bool True
+typeCheckList _ = Bool False
 
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
