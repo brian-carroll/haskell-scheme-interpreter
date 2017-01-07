@@ -55,6 +55,10 @@ expecting space or ")"' \
     || exit
 
 
+# Error for undefined function
+./eval '(undefinedfunction 42)' | should_be 'Unrecognized primitive function: "undefinedfunction"'
+
+
 # Arithmetic primitive functions
 ./eval '(+ 5 2)' | should_be '7' || exit
 ./eval '(- 5 2)' | should_be '3' || exit

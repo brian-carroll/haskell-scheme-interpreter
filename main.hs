@@ -106,7 +106,7 @@ eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
 apply func args =
-    maybe (throwError $ NotFunction "Unrecognized primitive function args" func)
+    maybe (throwError $ NotFunction "Unrecognized primitive function" func)
         ($ args)
         (lookup func primitives)
 
