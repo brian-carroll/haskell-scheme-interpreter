@@ -120,17 +120,21 @@ primitives =
     , ("mod", numericBinop mod)
     , ("quotient", numericBinop quot)
     , ("remainder", numericBinop rem)
+
     , ("symbol?", typeMatch (Atom ""))
     , ("string?", typeMatch (String ""))
     , ("bool?", typeMatch (Bool True))
     , ("number?", typeMatch (Number 0))
     , ("char?", typeMatch (Character 'a'))
     , ("list?", typeMatch (List []))
+
     , ("symbol->string", symbolToString)
     , ("string->symbol", stringToSymbol)
     ]
 
 
+-- Check if types match
+-- First arg acts as an "example" of the desired type, to be compared against the 2nd arg
 typeMatch :: LispVal -> [LispVal] -> ThrowsError LispVal
 typeMatch (Atom _)         [Atom _]         = return $ Bool True
 typeMatch (String _)       [String _]       = return $ Bool True
