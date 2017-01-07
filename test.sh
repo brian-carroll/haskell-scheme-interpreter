@@ -107,5 +107,60 @@ expecting space or ")"' \
 ./eval '(string->symbol abc 42)' | should_be 'Expected 1 args; found values (abc 42)' || exit
 
 
+# Comparison operators
+./eval '(= 42 abc)' | should_be 'Invalid type: expected number, found abc'
+./eval '(= 2 abc 123)' | should_be 'Expected 2 args; found values (2 abc 123)'
+
+./eval '(= 42 42)' | should_be '#t'
+./eval '(= 42 0)' | should_be '#f'
+
+./eval '(< 2 3)' | should_be '#t'
+./eval '(< 3 2)' | should_be '#f'
+
+./eval '(> 3 2)' | should_be '#t'
+./eval '(> 2 3)' | should_be '#f'
+
+./eval '(/= 42 42)' | should_be '#f'
+./eval '(/= 42 0)' | should_be '#t'
+
+./eval '(<= 2 3)' | should_be '#t'
+./eval '(<= 2 2)' | should_be '#t'
+./eval '(<= 3 2)' | should_be '#f'
+
+./eval '(>= 3 2)' | should_be '#t'
+./eval '(>= 3 3)' | should_be '#t'
+./eval '(>= 2 3)' | should_be '#f'
+
+./eval '(&& #t #t)' | should_be '#t'
+./eval '(&& #t #f)' | should_be '#f'
+./eval '(&& #f #t)' | should_be '#f'
+./eval '(&& #f #f)' | should_be '#f'
+
+./eval '(|| #t #t)' | should_be '#t'
+./eval '(|| #t #f)' | should_be '#t'
+./eval '(|| #f #t)' | should_be '#t'
+./eval '(|| #f #f)' | should_be '#f'
+
+./eval '(string=? "hello" "hello")' | should_be '#t'
+./eval '(string=? "hello" "abc")' | should_be '#f'
+
+./eval '(string<? "h" "hello")' | should_be '#t'
+./eval '(string<? "hello" "h")' | should_be '#f'
+./eval '(string<? "hello" "hello")' | should_be '#f'
+
+./eval '(string>? "hello" "h")' | should_be '#t'
+./eval '(string>? "h" "hello")' | should_be '#f'
+./eval '(string>? "hello" "hello")' | should_be '#f'
+
+./eval '(string<=? "h" "hello")' | should_be '#t'
+./eval '(string<=? "hello" "h")' | should_be '#f'
+./eval '(string<=? "hello" "hello")' | should_be '#t'
+
+./eval '(string>=? "hello" "h")' | should_be '#t'
+./eval '(string>=? "h" "hello")' | should_be '#f'
+./eval '(string>=? "hello" "hello")' | should_be '#t'
+
+
+
 # If we haven't exited yet then all tests must have passed
 echo "All tests passed"
