@@ -59,7 +59,7 @@ expecting space or ")"' \
 
 
 # Error for undefined function
-./eval '(undefinedfunction 42)' | should_be 'Unrecognized primitive function: "undefinedfunction"'
+./eval '(undefinedfunction 42)' | should_be 'Unrecognized primitive function: "undefinedfunction"' || exit
 
 
 # Arithmetic primitive functions
@@ -111,57 +111,57 @@ expecting space or ")"' \
 
 
 # Comparison operators
-./eval '(= 42 abc)' | should_be 'Invalid type: expected number, found abc'
-./eval '(= 2 abc 123)' | should_be 'Expected 2 args; found values (2 abc 123)'
+./eval '(= 42 abc)' | should_be 'Invalid type: expected number, found abc' || exit
+./eval '(= 2 abc 123)' | should_be 'Expected 2 args; found values (2 abc 123)' || exit
 
-./eval '(= 42 42)' | should_be '#t'
-./eval '(= 42 0)' | should_be '#f'
+./eval '(= 42 42)' | should_be '#t' || exit
+./eval '(= 42 0)' | should_be '#f' || exit
 
-./eval '(< 2 3)' | should_be '#t'
-./eval '(< 3 2)' | should_be '#f'
+./eval '(< 2 3)' | should_be '#t' || exit
+./eval '(< 3 2)' | should_be '#f' || exit
 
-./eval '(> 3 2)' | should_be '#t'
-./eval '(> 2 3)' | should_be '#f'
+./eval '(> 3 2)' | should_be '#t' || exit
+./eval '(> 2 3)' | should_be '#f' || exit
 
-./eval '(/= 42 42)' | should_be '#f'
-./eval '(/= 42 0)' | should_be '#t'
+./eval '(/= 42 42)' | should_be '#f' || exit
+./eval '(/= 42 0)' | should_be '#t' || exit
 
-./eval '(<= 2 3)' | should_be '#t'
-./eval '(<= 2 2)' | should_be '#t'
-./eval '(<= 3 2)' | should_be '#f'
+./eval '(<= 2 3)' | should_be '#t' || exit
+./eval '(<= 2 2)' | should_be '#t' || exit
+./eval '(<= 3 2)' | should_be '#f' || exit
 
-./eval '(>= 3 2)' | should_be '#t'
-./eval '(>= 3 3)' | should_be '#t'
-./eval '(>= 2 3)' | should_be '#f'
+./eval '(>= 3 2)' | should_be '#t' || exit
+./eval '(>= 3 3)' | should_be '#t' || exit
+./eval '(>= 2 3)' | should_be '#f' || exit
 
-./eval '(&& #t #t)' | should_be '#t'
-./eval '(&& #t #f)' | should_be '#f'
-./eval '(&& #f #t)' | should_be '#f'
-./eval '(&& #f #f)' | should_be '#f'
+./eval '(&& #t #t)' | should_be '#t' || exit
+./eval '(&& #t #f)' | should_be '#f' || exit
+./eval '(&& #f #t)' | should_be '#f' || exit
+./eval '(&& #f #f)' | should_be '#f' || exit
 
-./eval '(|| #t #t)' | should_be '#t'
-./eval '(|| #t #f)' | should_be '#t'
-./eval '(|| #f #t)' | should_be '#t'
-./eval '(|| #f #f)' | should_be '#f'
+./eval '(|| #t #t)' | should_be '#t' || exit
+./eval '(|| #t #f)' | should_be '#t' || exit
+./eval '(|| #f #t)' | should_be '#t' || exit
+./eval '(|| #f #f)' | should_be '#f' || exit
 
-./eval '(string=? "hello" "hello")' | should_be '#t'
-./eval '(string=? "hello" "abc")' | should_be '#f'
+./eval '(string=? "hello" "hello")' | should_be '#t' || exit
+./eval '(string=? "hello" "abc")' | should_be '#f' || exit
 
-./eval '(string<? "h" "hello")' | should_be '#t'
-./eval '(string<? "hello" "h")' | should_be '#f'
-./eval '(string<? "hello" "hello")' | should_be '#f'
+./eval '(string<? "h" "hello")' | should_be '#t' || exit
+./eval '(string<? "hello" "h")' | should_be '#f' || exit
+./eval '(string<? "hello" "hello")' | should_be '#f' || exit
 
-./eval '(string>? "hello" "h")' | should_be '#t'
-./eval '(string>? "h" "hello")' | should_be '#f'
-./eval '(string>? "hello" "hello")' | should_be '#f'
+./eval '(string>? "hello" "h")' | should_be '#t' || exit
+./eval '(string>? "h" "hello")' | should_be '#f' || exit
+./eval '(string>? "hello" "hello")' | should_be '#f' || exit
 
-./eval '(string<=? "h" "hello")' | should_be '#t'
-./eval '(string<=? "hello" "h")' | should_be '#f'
-./eval '(string<=? "hello" "hello")' | should_be '#t'
+./eval '(string<=? "h" "hello")' | should_be '#t' || exit
+./eval '(string<=? "hello" "h")' | should_be '#f' || exit
+./eval '(string<=? "hello" "hello")' | should_be '#t' || exit
 
-./eval '(string>=? "hello" "h")' | should_be '#t'
-./eval '(string>=? "h" "hello")' | should_be '#f'
-./eval '(string>=? "hello" "hello")' | should_be '#t'
+./eval '(string>=? "hello" "h")' | should_be '#t' || exit
+./eval '(string>=? "h" "hello")' | should_be '#f' || exit
+./eval '(string>=? "hello" "hello")' | should_be '#t' || exit
 
 
 
