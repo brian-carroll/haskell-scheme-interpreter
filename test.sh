@@ -66,26 +66,29 @@ expecting space or ")"' \
 
 
 # Type testing primitive functions
-# ./eval '(symbol? abc)' | should_be '#t' || exit
-# ./eval '(symbol? 42)' | should_be '#f' || exit
+./eval '(symbol? abc)' | should_be '#t' || exit
+./eval '(symbol? 42)' | should_be '#f' || exit
 
-# ./eval '(string? "hello world")' | should_be '#t' || exit
-# ./eval '(string? 42)' | should_be '#f' || exit
+./eval '(string? "hello world")' | should_be '#t' || exit
+./eval '(string? 42)' | should_be '#f' || exit
 
-# ./eval '(number? 42)' | should_be '#t' || exit
-# ./eval '(number? #x42)' | should_be '#t' || exit
-# ./eval '(number? "hello world")' | should_be '#f' || exit
+./eval '(number? 42)' | should_be '#t' || exit
+./eval '(number? #x42)' | should_be '#t' || exit
+./eval '(number? "hello world")' | should_be '#f' || exit
 
-# ./eval '(char? #\a)' | should_be '#t' || exit
-# ./eval '(char? #\newline)' | should_be '#t' || exit
-# ./eval '(char? 42)' | should_be '#f' || exit
+./eval '(char? #\a)' | should_be '#t' || exit
+./eval '(char? #\newline)' | should_be '#t' || exit
+./eval '(char? 42)' | should_be '#f' || exit
 
-# ./eval '(bool? #t)' | should_be '#t' || exit
-# ./eval '(bool? #f)' | should_be '#t' || exit
-# ./eval '(bool? 42)' | should_be '#f' || exit
+./eval '(bool? #t)' | should_be '#t' || exit
+./eval '(bool? #f)' | should_be '#t' || exit
+./eval '(bool? 42)' | should_be '#f' || exit
 
-# ./eval "(list? '(1 2 3))" | should_be '#t' || exit
-# ./eval '(list? 42)' | should_be '#f' || exit
+./eval "(list? '(1 2 3))" | should_be '#t' || exit
+./eval '(list? 42)' | should_be '#f' || exit
+
+./eval '(symbol?)' | should_be 'Expected 1 args; found values ()' || exit
+./eval '(symbol? 42 42)' | should_be 'Expected 1 args; found values (42 42)' || exit
 
 
 # symbol handling functions

@@ -120,15 +120,27 @@ primitives =
     , ("mod", numericBinop mod)
     , ("quotient", numericBinop quot)
     , ("remainder", numericBinop rem)
-    -- , ("symbol?", typeCheckAtom)
-    -- , ("string?", typeCheckString)
-    -- , ("bool?", typeCheckBool)
-    -- , ("number?", typeCheckNumber)
-    -- , ("char?", typeCheckCharacter)
-    -- , ("list?", typeCheckList)
+    , ("symbol?", typeMatch (Atom ""))
+    , ("string?", typeMatch (String ""))
+    , ("bool?", typeMatch (Bool True))
+    , ("number?", typeMatch (Number 0))
+    , ("char?", typeMatch (Character 'a'))
+    , ("list?", typeMatch (List []))
     , ("symbol->string", symbolToString)
     , ("string->symbol", stringToSymbol)
     ]
+
+
+typeMatch :: LispVal -> [LispVal] -> ThrowsError LispVal
+typeMatch (Atom _)         [Atom _]         = return $ Bool True
+typeMatch (String _)       [String _]       = return $ Bool True
+typeMatch (Bool _)         [Bool _]         = return $ Bool True
+typeMatch (Number _)       [Number _]       = return $ Bool True
+typeMatch (Character _)    [Character _]    = return $ Bool True
+typeMatch (List _)         [List _]         = return $ Bool True
+typeMatch (DottedList _ _) [DottedList _ _] = return $ Bool True
+typeMatch _ [_] = return $ Bool False
+typeMatch _ val = throwError $ NumArgs 1 val
 
 
 symbolToString :: [LispVal] -> ThrowsError LispVal
@@ -141,36 +153,6 @@ stringToSymbol :: [LispVal] -> ThrowsError LispVal
 stringToSymbol (String x : _) = return $ Atom x
 stringToSymbol [val] = throwError $ TypeMismatch "String" val
 stringToSymbol val = throwError $ NumArgs 1 val
-
-
-typeCheckAtom :: [LispVal] -> LispVal
-typeCheckAtom (Atom _ : _) = Bool True
-typeCheckAtom _ = Bool False
-
-
-typeCheckString :: [LispVal] -> LispVal
-typeCheckString (String _ : _) = Bool True
-typeCheckString _ = Bool False
-
-
-typeCheckBool :: [LispVal] -> LispVal
-typeCheckBool (Bool _ : _) = Bool True
-typeCheckBool _ = Bool False
-
-
-typeCheckNumber :: [LispVal] -> LispVal
-typeCheckNumber (Number _ : _) = Bool True
-typeCheckNumber _ = Bool False
-
-
-typeCheckCharacter :: [LispVal] -> LispVal
-typeCheckCharacter (Character _ : _) = Bool True
-typeCheckCharacter _ = Bool False
-
-
-typeCheckList :: [LispVal] -> LispVal
-typeCheckList (List _ : _) = Bool True
-typeCheckList _ = Bool False
 
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
