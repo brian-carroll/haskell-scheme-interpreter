@@ -61,7 +61,7 @@ showError (UnboundVar message varname)  = message ++ ": " ++ varname
 showError (BadSpecialForm message form) = message ++ ": " ++ show form
 showError (NotFunction message func)    = message ++ ": " ++ show func
 showError (NumArgs expected found)      = "Expected " ++ show expected
-                                       ++ " args; found values " ++ unwordsList found
+                                       ++ " args; found values (" ++ unwordsList found ++ ")"
 showError (TypeMismatch expected found) = "Invalid type: expected " ++ expected
                                        ++ ", found " ++ show found
 showError (Parser parseErr)             = "Parse error at " ++ show parseErr
@@ -126,17 +126,21 @@ primitives =
     -- , ("number?", typeCheckNumber)
     -- , ("char?", typeCheckCharacter)
     -- , ("list?", typeCheckList)
-    -- , ("symbol->string", symbolToString)
-    -- , ("string->symbol", stringToSymbol)
+    , ("symbol->string", symbolToString)
+    , ("string->symbol", stringToSymbol)
     ]
 
 
-symbolToString :: [LispVal] -> LispVal
-symbolToString (Atom x : _) = String x
+symbolToString :: [LispVal] -> ThrowsError LispVal
+symbolToString [Atom x] = return $ String x
+symbolToString [val] = throwError $ TypeMismatch "Atom" val
+symbolToString val = throwError $ NumArgs 1 val
 
 
-stringToSymbol :: [LispVal] -> LispVal
-stringToSymbol (String x : _) = Atom x
+stringToSymbol :: [LispVal] -> ThrowsError LispVal
+stringToSymbol (String x : _) = return $ Atom x
+stringToSymbol [val] = throwError $ TypeMismatch "String" val
+stringToSymbol val = throwError $ NumArgs 1 val
 
 
 typeCheckAtom :: [LispVal] -> LispVal

@@ -89,8 +89,15 @@ expecting space or ")"' \
 
 
 # symbol handling functions
-# ./eval '(symbol->string abc)' | should_be '"abc"' || exit
-# ./eval '(string->symbol "abc")' | should_be 'abc' || exit
+./eval '(symbol->string abc)' | should_be '"abc"' || exit
+./eval '(symbol->string 42)' | should_be 'Invalid type: expected Atom, found 42' || exit
+./eval '(symbol->string)' | should_be 'Expected 1 args; found values ()' || exit
+./eval '(symbol->string abc 42)' | should_be 'Expected 1 args; found values (abc 42)' || exit
+
+./eval '(string->symbol "abc")' | should_be 'abc' || exit
+./eval '(string->symbol 42)' | should_be 'Invalid type: expected String, found 42' || exit
+./eval '(string->symbol)' | should_be 'Expected 1 args; found values ()' || exit
+./eval '(string->symbol abc 42)' | should_be 'Expected 1 args; found values (abc 42)' || exit
 
 
 # If we haven't exited yet then all tests must have passed
