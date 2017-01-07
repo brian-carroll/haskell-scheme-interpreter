@@ -1,5 +1,8 @@
 #!/bin/bash
 
+ghc --make -o eval main.hs || exit
+
+
 function should_be() {
     ACTUAL=`cat /dev/stdin`
     #read -r ACTUAL  # read stdin of this function (from pipe)
