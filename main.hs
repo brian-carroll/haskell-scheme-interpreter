@@ -80,7 +80,17 @@ primitives =
     , ("number?", typeCheckNumber)
     , ("char?", typeCheckCharacter)
     , ("list?", typeCheckList)
+    , ("symbol->string", symbolToString)
+    , ("string->symbol", stringToSymbol)
     ]
+
+
+symbolToString :: [LispVal] -> LispVal
+symbolToString (Atom x : _) = String x
+
+
+stringToSymbol :: [LispVal] -> LispVal
+stringToSymbol (String x : _) = Atom x
 
 
 typeCheckAtom :: [LispVal] -> LispVal

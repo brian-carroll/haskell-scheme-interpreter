@@ -78,5 +78,10 @@ expecting space or ")""' \
 ./eval '(list? 42)' | should_be '#f' || exit
 
 
+# symbol handling functions
+./eval '(symbol->string abc)' | should_be '"abc"' || exit
+./eval '(string->symbol "abc")' | should_be 'abc' || exit
+
+
 # If we haven't exited yet then all tests must have passed
 echo "All tests passed"
