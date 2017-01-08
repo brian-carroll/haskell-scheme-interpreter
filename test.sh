@@ -42,22 +42,22 @@ parser_test '(#\space)' "(#\ )"
 
 # Lists
 parser_test "(a test)" \
-    '(a test)' \
-   
+    '(a test)'
+
 parser_test "(a (nested) test)" \
-    '(a (nested) test)' \
-   
+    '(a (nested) test)'
+
 parser_test "(a (dotted . list) test)" \
-    '(a (dotted . list) test)' \
-   
+    '(a (dotted . list) test)'
+
 parser_test "(a '(quoted (dotted . list)) test)" \
-    '(a (quote (quoted (dotted . list))) test)' \
-   
+    '(a (quote (quoted (dotted . list))) test)'
+
 parser_test "(a '(imbalanced parens)" \
 'Parse error at "lisp" (line 1, column 32):
 unexpected end of input
-expecting space or ")"' \
-   
+expecting space or ")"'
+
 
 
 # Error for undefined function
@@ -184,6 +184,13 @@ expecting space or ")"' \
 ./eval "(cdr 'a)" | should_be 'Invalid type: expected pair, found a'
 ./eval "(cdr 'a 'b)" | should_be 'Expected 1 args; found values (a b)'
 
+./eval "(cons 1 ())" | should_be '(1)'
+./eval "(cons 1 '(2 3))" | should_be '(1 2 3)'
+./eval "(cons 1 '(2 . 3))" | should_be '(1 2 . 3)'
+./eval "(cons 1 2)" | should_be '(1 . 2)'
+./eval "(cons '(1 2) 3)" | should_be '((1 2) . 3)'
+./eval "(cons 1 2 3)" | should_be 'Expected 2 args; found values (1 2 3)'
+./eval "(cons 1)" | should_be 'Expected 2 args; found values (1)'
 
 
 # If we haven't exited yet then all tests must have passed

@@ -101,6 +101,7 @@ eval val@(Number _) = return val
 eval val@(Bool _) = return val
 eval val@(Character _) = return val
 eval val@(DottedList head tail) = return val
+eval val@(List []) = return val
 eval (List [Atom "quote", val]) = return val
 eval (List (Atom func : args)) = mapM eval args >>= apply func
 eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
@@ -150,6 +151,7 @@ primitives =
     , ("if", conditional)
     , ("car", car)
     , ("cdr", cdr)
+    , ("cons", cons)
     ]
 
 
