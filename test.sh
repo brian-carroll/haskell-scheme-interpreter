@@ -163,6 +163,25 @@ expecting space or ")"' \
 ./eval '(string>=? "h" "hello")' | should_be '#f' || exit
 ./eval '(string>=? "hello" "hello")' | should_be '#t' || exit
 
+./eval '(if (> 2 3) "yes" "no")' | should_be '"no"' || exit
+./eval '(if (< 2 3) "yes" "no")' | should_be '"yes"' || exit
+./eval '(if 1 2 3 4)' | should_be 'Expected 3 args; found values (1 2 3 4)' || exit
+./eval '(if 1 2)' | should_be 'Expected 3 args; found values (1 2)' || exit
+
+./eval "(car '(1 2 3))" | should_be '1' || exit
+./eval "(car '(1))" | should_be '1' || exit
+./eval "(car '(1 2 . 3))" | should_be '1' || exit
+./eval '(car "thing")' | should_be 'Invalid type: expected pair, found "thing"' || exit
+./eval '(car 1 2 3)' | should_be 'Expected 1 args; found values (1 2 3)' || exit
+
+./eval "(cdr '(a b c))" | should_be '(b c)' || exit
+./eval "(cdr '(a b))" | should_be '(b)' || exit
+./eval "(cdr '(a))" | should_be '()' || exit
+./eval "(cdr '(a . b))" | should_be 'b' || exit
+./eval "(cdr '(a b . c))" | should_be '(b . c)' || exit
+./eval "(cdr 'a)" | should_be 'Invalid type: expected pair, found a' || exit
+./eval "(cdr 'a 'b)" | should_be 'Expected 1 args; found values (a b)' || exit
+
 
 
 # If we haven't exited yet then all tests must have passed
