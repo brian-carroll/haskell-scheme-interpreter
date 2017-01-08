@@ -30,7 +30,6 @@ data LispVal
     | Character Char
     | Bool Bool
 
-
 instance Show LispVal where show = showVal
 
 showVal :: LispVal -> String
@@ -43,17 +42,20 @@ showVal (Character c) = "#\\" ++ [c]
 showVal (List contents) = "(" ++ unwordsList contents ++ ")"
 showVal (DottedList head tail) = "(" ++ unwordsList head ++ " . " ++ showVal tail ++ ")"
 
+
 unwordsList :: [LispVal] -> String
-unwordsList = unwords . map showVal
+unwordsList =
+    unwords . map showVal
 
 
-data LispError = NumArgs Integer [LispVal]
-               | TypeMismatch String LispVal
-               | Parser ParseError
-               | BadSpecialForm String LispVal
-               | NotFunction String String
-               | UnboundVar String String
-               | Default String
+data LispError
+    = NumArgs Integer [LispVal]
+    | TypeMismatch String LispVal
+    | Parser ParseError
+    | BadSpecialForm String LispVal
+    | NotFunction String String
+    | UnboundVar String String
+    | Default String
 
 
 showError :: LispError -> String
@@ -72,8 +74,8 @@ instance Show LispError where
 
 
 instance Error LispError where
-     noMsg = Default "An error has occurred"
-     strMsg = Default
+    noMsg = Default "An error has occurred"
+    strMsg = Default
 
 
 type ThrowsError = Either LispError  -- partially applied
@@ -246,15 +248,17 @@ parseQuoted = do
 
 
 parseExpr :: Parser LispVal
-parseExpr = parseString
-         <|> (try parseCharacter)
-         <|> (try parseNumber)
-         <|> parseAtom
-         <|> parseQuoted
-         <|> do char '('
-                x <- try parseList <|> parseDottedList
-                char ')'
-                return x
+parseExpr =
+    parseString
+    <|> (try parseCharacter)
+    <|> (try parseNumber)
+    <|> parseAtom
+    <|> parseQuoted
+    <|> do
+            char '('
+            x <- try parseList <|> parseDottedList
+            char ')'
+            return x
 
 
 parseString :: Parser LispVal
@@ -300,11 +304,13 @@ parseNumber =
 -- ------------------
 
 symbol :: Parser Char
-symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
+symbol =
+    oneOf "!#$%&|*+-/:<=>?@^_~"
 
 
 spaces :: Parser ()
-spaces = skipMany1 space
+spaces =
+    skipMany1 space
 
 
 escapedChar :: Parser Char
