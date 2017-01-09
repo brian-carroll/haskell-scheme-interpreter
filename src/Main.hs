@@ -3,11 +3,7 @@ module Main where
 -- Libraries
 import System.Environment
 import System.IO
-import Text.ParserCombinators.Parsec hiding (spaces)
 import Control.Monad
-import Control.Monad.Error
-import Numeric (readOct, readHex)
-import qualified Data.Char
 
 
 -- Local modules
