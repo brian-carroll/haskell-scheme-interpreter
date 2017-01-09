@@ -12,19 +12,20 @@ import Control.Monad.Error (throwError)
 
 -- Local modules
 import LispTypes (LispVal (..), LispError (..), ThrowsError)
-import Eval.Env (setVar, defineVar, nullEnv, IOThrowsError, Env, liftThrows, runIOThrows)
+import Eval.Env (getVar, setVar, defineVar, nullEnv, IOThrowsError, Env, liftThrows, runIOThrows)
 import Eval.Primitives (primitives)
 
 
 -- Evaluate a Lisp expression
 eval :: Env -> LispVal -> IOThrowsError LispVal
-eval _env val@(Atom _) = return val
 eval _env val@(String _) = return val
 eval _env val@(Number _) = return val
 eval _env val@(Bool _) = return val
 eval _env val@(Character _) = return val
 eval _env val@(DottedList _ _) = return val
 eval _env val@(List []) = return val
+
+eval env (Atom id) = getVar env id
 
 eval _env (List [Atom "quote", val]) = return val
 

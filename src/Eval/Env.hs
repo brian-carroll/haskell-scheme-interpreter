@@ -3,6 +3,7 @@ module Eval.Env
     , IOThrowsError
     , liftThrows
     , runIOThrows
+    , getVar
     , setVar
     , defineVar
     , nullEnv
@@ -51,8 +52,8 @@ trapError action =
 
 
 extractValue :: ThrowsError a -> a
-extractValue (Right val) =
-    val
+extractValue (Right val) = val
+extractValue (Left _) = undefined
 
 
 -- ---------

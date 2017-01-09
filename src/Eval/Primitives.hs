@@ -53,14 +53,14 @@ primitives =
 
 
 car :: [LispVal] -> ThrowsError LispVal
-car [List (x : xs)]         = return x
-car [DottedList (x : xs) _] = return x
+car [List (x : _)]         = return x
+car [DottedList (x : _) _] = return x
 car [badArg]                = throwError $ TypeMismatch "pair" badArg
 car badArgList              = throwError $ NumArgs 1 badArgList
 
 
 cdr :: [LispVal] -> ThrowsError LispVal
-cdr [List (x : xs)]         = return $ List xs
+cdr [List (_ : xs)]         = return $ List xs
 cdr [DottedList [_] x]      = return x
 cdr [DottedList (_ : xs) x] = return $ DottedList xs x
 cdr [badArg]                = throwError $ TypeMismatch "pair" badArg
@@ -94,7 +94,7 @@ symbolToString val = throwError $ NumArgs 1 val
 
 
 stringToSymbol :: [LispVal] -> ThrowsError LispVal
-stringToSymbol (String x : _) = return $ Atom x
+stringToSymbol [String x] = return $ Atom x
 stringToSymbol [val] = throwError $ TypeMismatch "String" val
 stringToSymbol val = throwError $ NumArgs 1 val
 
@@ -115,6 +115,6 @@ boolBoolBinop = boolBinop unpackBool
 
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
-numericBinop op           []  = throwError $ NumArgs 2 []
-numericBinop op singleVal@[_] = throwError $ NumArgs 2 singleVal
+numericBinop _            []  = throwError $ NumArgs 2 []
+numericBinop _ singleVal@[_]  = throwError $ NumArgs 2 singleVal
 numericBinop op params        = mapM unpackNum params >>= return . Number . foldl1 op
