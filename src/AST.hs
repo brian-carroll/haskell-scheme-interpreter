@@ -1,19 +1,12 @@
-module Types
+module AST
     ( LispVal (..)
     , LispError (..)
     , ThrowsError
-    , trapError
-    , extractValue
-    , Env
-    , IOThrowsError
-    , liftThrows
-    , runIOThrows
     )
     where
 
 import Text.ParserCombinators.Parsec (ParseError)
-import Control.Monad.Error (Error, noMsg, strMsg, throwError, catchError, ErrorT, runErrorT)
-import Data.IORef (IORef)
+import Control.Monad.Error (Error, noMsg, strMsg)
 
 
 -- -----------
@@ -83,39 +76,3 @@ instance Error LispError where
 
 
 type ThrowsError = Either LispError  -- partially applied
-
-
-trapError action =
-    catchError action (return . show)
-
-
-extractValue :: ThrowsError a -> a
-extractValue (Right val) =
-    val
-
-
--- --------------
--- LISP VARIABLES
--- --------------
-
--- Environment to store a map of Lisp variables
--- Lisp variables are mutable. Use IORef to update them inside IO monad
-type Env = 
-    IORef [(String, IORef LispVal)]
-
-
--- Type to allow us to throw LispErrors in the IO monad
-type IOThrowsError =
-    ErrorT LispError IO  -- partially applied, missing last type arg
-
-
--- Convert ThrowsError values into IOThrowsError values
-liftThrows :: ThrowsError a -> IOThrowsError a
-liftThrows (Left err) = throwError err
-liftThrows (Right val) = return val
-
-
--- Convert IOThrowsError actions into IO actions
-runIOThrows :: IOThrowsError String -> IO String
-runIOThrows action =
-    runErrorT (trapError action) >>= return . extractValue

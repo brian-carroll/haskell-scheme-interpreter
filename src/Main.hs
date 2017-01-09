@@ -7,9 +7,8 @@ import Control.Monad (liftM)
 
 
 -- Local modules
-import Types (Env, runIOThrows, liftThrows)
 import Parser (readExpr)
-import Eval (eval, nullEnv)
+import Eval (eval, nullEnv, Env, runIOThrows, liftThrows)
 
 
 -- ----

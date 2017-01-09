@@ -1,14 +1,63 @@
-module Eval.LispEnv (setVar, defineVar, nullEnv) where
+module Eval.LispEnv
+    ( Env
+    , IOThrowsError
+    , liftThrows
+    , runIOThrows
+    , setVar
+    , defineVar
+    , nullEnv
+    )
+    where
+
 
 -- Libraries
-import Control.Monad.Error (liftM, throwError)
+import Control.Monad.Error (liftM, throwError, catchError, ErrorT, runErrorT)
 import Control.Monad.Trans (liftIO)
-import Data.IORef (newIORef, readIORef, writeIORef)
+import Data.IORef (IORef, newIORef, readIORef, writeIORef)
 
 -- Local modules
-import Types (LispVal (..), LispError (..), IOThrowsError, Env)
+import AST (LispVal (..), LispError (..), ThrowsError)
 
 
+-- -----
+-- Types
+-- -----
+
+-- Environment to store a map of Lisp variables
+-- Lisp variables are mutable. Use IORef to update them inside IO monad
+type Env =
+    IORef [(String, IORef LispVal)]
+
+
+-- Type to allow us to throw LispErrors in the IO monad
+type IOThrowsError =
+    ErrorT LispError IO  -- partially applied, missing last type arg
+
+
+-- Convert ThrowsError values into IOThrowsError values
+liftThrows :: ThrowsError a -> IOThrowsError a
+liftThrows (Left err) = throwError err
+liftThrows (Right val) = return val
+
+
+-- Convert IOThrowsError actions into IO actions
+runIOThrows :: IOThrowsError String -> IO String
+runIOThrows action =
+    runErrorT (trapError action) >>= return . extractValue
+
+
+trapError action =
+    catchError action (return . show)
+
+
+extractValue :: ThrowsError a -> a
+extractValue (Right val) =
+    val
+
+
+-- ---------
+-- Functions
+-- ---------
 
 nullEnv :: IO Env
 nullEnv =

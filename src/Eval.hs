@@ -1,11 +1,18 @@
-module Eval (eval, nullEnv) where
+module Eval
+    ( eval
+    , Env
+    , nullEnv
+    , liftThrows
+    , runIOThrows
+    )
+    where
 
 -- Libraries
 import Control.Monad.Error
 
 -- Local modules
-import Types (LispVal (..), LispError (..), ThrowsError, IOThrowsError, Env, liftThrows)
-import Eval.LispEnv (setVar, defineVar, nullEnv)
+import AST (LispVal (..), LispError (..), ThrowsError)
+import Eval.LispEnv (setVar, defineVar, nullEnv, IOThrowsError, Env, liftThrows, runIOThrows)
 import Eval.WeakTyping (eqv, equal, unpackBool, unpackNum, unpackStr)
 
 
