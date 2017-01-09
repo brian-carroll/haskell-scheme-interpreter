@@ -1,4 +1,4 @@
-module LispEnv where
+module Eval.LispEnv where
 
 -- Libraries
 import Control.Monad
