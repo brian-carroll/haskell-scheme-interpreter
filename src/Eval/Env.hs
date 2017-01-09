@@ -1,4 +1,4 @@
-module Eval.LispEnv
+module Eval.Env
     ( Env
     , IOThrowsError
     , liftThrows

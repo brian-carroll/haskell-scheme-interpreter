@@ -12,7 +12,7 @@ import Control.Monad.Error (throwError)
 
 -- Local modules
 import LispTypes (LispVal (..), LispError (..), ThrowsError)
-import Eval.LispEnv (setVar, defineVar, nullEnv, IOThrowsError, Env, liftThrows, runIOThrows)
+import Eval.Env (setVar, defineVar, nullEnv, IOThrowsError, Env, liftThrows, runIOThrows)
 import Eval.WeakTyping (eqv, equal, unpackBool, unpackNum, unpackStr)
 
 
