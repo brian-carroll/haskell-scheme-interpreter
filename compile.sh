@@ -7,4 +7,8 @@ else
     EXECUTABLE_NAME=$1
 fi
 
-ghc --make -o bin/$EXECUTABLE_NAME  -outputdir tmp  src/Main.hs
+cd src
+ghc --make \
+    -o ../bin/$EXECUTABLE_NAME \
+    -outputdir ../tmp \
+    Main.hs
