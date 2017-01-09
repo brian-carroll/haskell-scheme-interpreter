@@ -8,7 +8,7 @@ module Eval
     where
 
 -- Libraries
-import Control.Monad.Error
+import Control.Monad.Error (throwError)
 
 -- Local modules
 import AST (LispVal (..), LispError (..), ThrowsError)
