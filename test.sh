@@ -35,6 +35,21 @@ function last_result {
     tail -n 2 | head -n 1 | remove_prompt
 }
 
+
+#____________________________________________________________________________
+
+
+# Variables (get, define, set)
+repl '(+ x 1)' | last_result | should_be "Getting an unbound variable: x"
+repl '(set! x 123)' | last_result | should_be "Setting an unbound variable: x"
+repl '(define x 123)\n(+ x 1)' | last_result | should_be "124"
+repl '(define x 123)\n(set! x 321)\n(+ x 1)' | last_result | should_be "322"
+repl '(define x 123)\n(define x 321)\n(+ x 1)' | last_result | should_be "322"
+
+
+#____________________________________________________________________________
+
+
 # Numbers
 parser_test '25' '25'
 parser_test '#x10' '16'
@@ -71,6 +86,8 @@ parser_test "(a '(imbalanced parens)" \
 unexpected end of input
 expecting space or ")"'
 
+
+#____________________________________________________________________________
 
 
 # Error for undefined function
@@ -216,13 +233,7 @@ bin/lisp '(equal? (quote 2) "2")' | should_be '#t'
 bin/lisp '(equal? (quote (1 "2")) (quote (1 2)))' | should_be '#t' # recursive weak typing
 bin/lisp '(equal? 2 3)' | should_be '#f'
 
-
-# Variables (get, define, set)
-repl '(+ x 1)' | last_result | should_be "Getting an unbound variable: x"
-repl '(set! x 123)' | last_result | should_be "Setting an unbound variable: x"
-repl '(define x 123)\n(+ x 1)' | last_result | should_be "124"
-repl '(define x 123)\n(set! x 321)\n(+ x 1)' | last_result | should_be "322"
-repl '(define x 123)\n(define x 321)\n(+ x 1)' | last_result | should_be "322"
+#____________________________________________________________________________
 
 
 # If we haven't exited yet then all tests must have passed
