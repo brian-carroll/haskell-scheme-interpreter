@@ -9,7 +9,7 @@ module Eval.WeakTyping
     )
     where
 
-import Types
+import Types (LispVal (..), LispError (..), ThrowsError)
 import Control.Monad.Error
 
 

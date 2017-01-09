@@ -4,9 +4,9 @@ module Eval (eval, nullEnv) where
 import Control.Monad.Error
 
 -- Local modules
-import Types
-import Eval.LispEnv
-import Eval.WeakTyping
+import Types (LispVal (..), LispError (..), ThrowsError, IOThrowsError, Env, liftThrows)
+import Eval.LispEnv (setVar, defineVar, nullEnv)
+import Eval.WeakTyping (eqv, equal, unpackBool, unpackNum, unpackStr)
 
 
 eval :: Env -> LispVal -> IOThrowsError LispVal

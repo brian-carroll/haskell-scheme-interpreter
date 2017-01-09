@@ -1,4 +1,4 @@
-module Eval.LispEnv where
+module Eval.LispEnv (setVar, defineVar, nullEnv) where
 
 -- Libraries
 import Control.Monad
@@ -7,7 +7,7 @@ import Control.Monad.Trans
 import Data.IORef
 
 -- Local modules
-import Types
+import Types (LispVal (..), LispError (..), IOThrowsError, Env)
 
 
 
