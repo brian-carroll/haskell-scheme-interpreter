@@ -30,11 +30,6 @@ function remove_prompt {
     echo ${INPUT#"Lisp>>> "}
 }
 
-function get_line {
-    local LINE_NUMBER=$1
-    sed -n ${LINE_NUMBER}p | remove_prompt
-}
-
 function last_result {
     # Extract second-last line (omit the blank line at the end)
     tail -n 2 | head -n 1 | remove_prompt
