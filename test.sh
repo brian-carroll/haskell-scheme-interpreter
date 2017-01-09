@@ -75,7 +75,7 @@ bin/lisp '(remainder 5 2)' | should_be '1'
 
 
 # Type testing primitive functions
-# bin/lisp '(symbol? abc)' | should_be '#t'
+bin/lisp "(symbol? 'abc)" | should_be '#t'
 bin/lisp '(symbol? 42)' | should_be '#f'
 
 bin/lisp '(string? "hello world")' | should_be '#t'
@@ -101,10 +101,10 @@ bin/lisp '(symbol? 42 42)' | should_be 'Expected 1 args; found values (42 42)'
 
 
 # symbol handling functions
-# bin/lisp '(symbol->string abc)' | should_be '"abc"'
+bin/lisp "(symbol->string 'abc)" | should_be '"abc"'
 bin/lisp '(symbol->string 42)' | should_be 'Invalid type: expected Atom, found 42'
 bin/lisp '(symbol->string)' | should_be 'Expected 1 args; found values ()'
-# bin/lisp '(symbol->string abc 42)' | should_be 'Expected 1 args; found values (abc 42)'
+bin/lisp "(symbol->string 'abc 42)" | should_be 'Expected 1 args; found values (abc 42)'
 
 bin/lisp '(string->symbol "abc")' | should_be 'abc'
 bin/lisp '(string->symbol 42)' | should_be 'Invalid type: expected String, found 42'
