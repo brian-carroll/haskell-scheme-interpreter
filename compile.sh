@@ -10,5 +10,5 @@ fi
 cd src
 ghc --make \
     -o ../bin/$EXECUTABLE_NAME \
-    -outputdir ../tmp \
+    -outputdir ../.ghc \
     Main.hs
