@@ -119,6 +119,7 @@ escapedChar =
                 't' -> '\t'
                 'n' -> '\n'
                 'r' -> '\r'
+                _ -> undefined
 
 
 plainNumber :: Parser Integer

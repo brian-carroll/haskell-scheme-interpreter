@@ -32,7 +32,7 @@ showVal (Bool True) = "#t"
 showVal (Bool False) = "#f"
 showVal (Character c) = "#\\" ++ [c]
 showVal (List contents) = "(" ++ unwordsList contents ++ ")"
-showVal (DottedList head tail) = "(" ++ unwordsList head ++ " . " ++ showVal tail ++ ")"
+showVal (DottedList h t) = "(" ++ unwordsList h ++ " . " ++ showVal t ++ ")"
 
 
 unwordsList :: [LispVal] -> String
@@ -64,6 +64,7 @@ showError (NumArgs expected found)      = "Expected " ++ show expected
 showError (TypeMismatch expected found) = "Invalid type: expected " ++ expected
                                        ++ ", found " ++ show found
 showError (Parser parseErr)             = "Parse error at " ++ show parseErr
+showError _                             = undefined
 
 
 instance Show LispError where
