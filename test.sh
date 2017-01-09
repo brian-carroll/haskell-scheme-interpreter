@@ -37,7 +37,7 @@ function get_line {
 
 function last_result {
     # Extract second-last line (omit the blank line at the end)
-    tail -n 2 $1 | head -n 1 | remove_prompt
+    tail -n 2 | head -n 1 | remove_prompt
 }
 
 # Numbers
