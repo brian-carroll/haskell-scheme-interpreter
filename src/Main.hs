@@ -1,9 +1,9 @@
 module Main where
 
 -- Libraries
-import System.Environment
-import System.IO
-import Control.Monad
+import System.Environment (getArgs)
+import System.IO (hFlush, stdout)
+import Control.Monad (liftM)
 
 
 -- Local modules

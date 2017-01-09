@@ -1,9 +1,9 @@
 module Parser (readExpr) where
 
 -- Libraries
-import Text.ParserCombinators.Parsec hiding (spaces)
-import Control.Monad
-import Control.Monad.Error
+import Text.ParserCombinators.Parsec (Parser, (<|>), anyChar, char, digit, endBy, letter,
+            many, many1, noneOf, oneOf, parse, sepBy, skipMany1, space, try, unexpected)
+import Control.Monad.Error (throwError, liftM, when)
 import Numeric (readOct, readHex)
 import qualified Data.Char
 

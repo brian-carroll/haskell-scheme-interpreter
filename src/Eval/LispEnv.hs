@@ -1,10 +1,9 @@
 module Eval.LispEnv (setVar, defineVar, nullEnv) where
 
 -- Libraries
-import Control.Monad
-import Control.Monad.Error
-import Control.Monad.Trans
-import Data.IORef
+import Control.Monad.Error (liftM, throwError)
+import Control.Monad.Trans (liftIO)
+import Data.IORef (newIORef, readIORef, writeIORef)
 
 -- Local modules
 import Types (LispVal (..), LispError (..), IOThrowsError, Env)

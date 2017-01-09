@@ -10,7 +10,7 @@ module Eval.WeakTyping
     where
 
 import Types (LispVal (..), LispError (..), ThrowsError)
-import Control.Monad.Error
+import Control.Monad.Error (throwError, catchError, liftM)
 
 
 -- Typeclass to help with weak typing

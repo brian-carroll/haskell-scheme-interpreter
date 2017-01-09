@@ -11,9 +11,9 @@ module Types
     )
     where
 
-import Text.ParserCombinators.Parsec
-import Control.Monad.Error
-import Data.IORef
+import Text.ParserCombinators.Parsec (ParseError)
+import Control.Monad.Error (Error, noMsg, strMsg, throwError, catchError, ErrorT, runErrorT)
+import Data.IORef (IORef)
 
 
 -- -----------
