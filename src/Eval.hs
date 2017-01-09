@@ -1,25 +1,42 @@
 {-# LANGUAGE ExistentialQuantification #-}
 
-module Eval (eval) where
+module Eval (eval, nullEnv) where
 
 -- Libraries
 import Control.Monad.Error
 
 -- Local modules
 import Types
+import LispEnv
 
 
-eval :: LispVal -> ThrowsError LispVal
-eval val@(Atom _) = return val
-eval val@(String _) = return val
-eval val@(Number _) = return val
-eval val@(Bool _) = return val
-eval val@(Character _) = return val
-eval val@(DottedList head tail) = return val
-eval val@(List []) = return val
-eval (List [Atom "quote", val]) = return val
-eval (List (Atom func : args)) = mapM eval args >>= apply func
-eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
+eval :: Env -> LispVal -> IOThrowsError LispVal
+eval env val@(Atom _) = return val
+eval env val@(String _) = return val
+eval env val@(Number _) = return val
+eval env val@(Bool _) = return val
+eval env val@(Character _) = return val
+eval env val@(DottedList head tail) = return val
+eval env val@(List []) = return val
+
+eval env (List [Atom "quote", val]) = return val
+
+eval env (List [Atom "if", pred, conseq, alt]) = do 
+    result <- eval env pred
+    case result of
+        Bool False -> eval env alt
+        otherwise -> eval env conseq
+eval env (List (Atom "if" : badArgList)) = throwError $ NumArgs 3 badArgList
+
+eval env (List [Atom "set!", Atom var, form]) =
+     eval env form >>= setVar env var
+
+eval env (List [Atom "define", Atom var, form]) =
+     eval env form >>= defineVar env var
+
+eval env (List (Atom func : args)) = mapM (eval env) args >>= liftThrows . apply func
+
+eval env badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
 
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
@@ -63,7 +80,6 @@ primitives =
     , ("symbol->string", symbolToString)
     , ("string->symbol", stringToSymbol)
 
-    , ("if", conditional)
     , ("car", car)
     , ("cdr", cdr)
     , ("cons", cons)
@@ -113,17 +129,6 @@ equal [arg1, arg2] = do
       return $ Bool $ ((let (Bool x) = eqvEquals in x) || primitiveEquals)
 equal badArgList = throwError $ NumArgs 2 badArgList
 
-
-
-conditional :: [LispVal] -> ThrowsError LispVal
-conditional [pred, conseq, alt] =
-    do
-        result <- eval pred
-        case result of
-            Bool False -> eval alt
-            otherwise  -> eval conseq
-conditional badArgList =
-    throwError $ NumArgs 3 badArgList
 
 
 car :: [LispVal] -> ThrowsError LispVal
