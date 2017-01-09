@@ -192,6 +192,15 @@ expecting space or ")"'
 ./eval "(cons 1 2 3)" | should_be 'Expected 2 args; found values (1 2 3)'
 ./eval "(cons 1)" | should_be 'Expected 2 args; found values (1)'
 
+./eval "(eqv? '(1 2 3) '(1 2 3))" | should_be '#t'
+./eval '(eqv? 2 2)' | should_be '#t'
+./eval '(eqv? 2 "2")' | should_be '#f'
+
+./eval "(equal? '(1 2 3) '(1 2 3))" | should_be '#t'
+./eval '(equal? 2 2)' | should_be '#t'
+./eval '(equal? 2 "2")' | should_be '#t'
+./eval '(equal? (quote 2) "2")' | should_be '#t'
+
 
 # If we haven't exited yet then all tests must have passed
 echo "All tests passed"
