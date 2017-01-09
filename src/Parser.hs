@@ -8,7 +8,7 @@ import Numeric (readOct, readHex)
 import qualified Data.Char
 
 -- Local modules
-import AST (LispVal (..), LispError (..), ThrowsError)
+import LispTypes (LispVal (..), LispError (..), ThrowsError)
 
 
 

@@ -16,7 +16,7 @@ import Control.Monad.Trans (liftIO)
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
 
 -- Local modules
-import AST (LispVal (..), LispError (..), ThrowsError)
+import LispTypes (LispVal (..), LispError (..), ThrowsError)
 
 
 -- -----

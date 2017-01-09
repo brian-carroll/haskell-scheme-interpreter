@@ -11,7 +11,7 @@ module Eval
 import Control.Monad.Error (throwError)
 
 -- Local modules
-import AST (LispVal (..), LispError (..), ThrowsError)
+import LispTypes (LispVal (..), LispError (..), ThrowsError)
 import Eval.LispEnv (setVar, defineVar, nullEnv, IOThrowsError, Env, liftThrows, runIOThrows)
 import Eval.WeakTyping (eqv, equal, unpackBool, unpackNum, unpackStr)
 

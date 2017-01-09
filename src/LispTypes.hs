@@ -1,4 +1,4 @@
-module AST
+module LispTypes
     ( LispVal (..)
     , LispError (..)
     , ThrowsError
