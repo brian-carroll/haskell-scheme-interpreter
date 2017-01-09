@@ -200,6 +200,8 @@ expecting space or ")"'
 ./eval '(equal? 2 2)' | should_be '#t'
 ./eval '(equal? 2 "2")' | should_be '#t'
 ./eval '(equal? (quote 2) "2")' | should_be '#t'
+./eval '(equal? (quote (1 "2")) (quote (1 2)))' | should_be '#t' # recursive weak typing
+./eval '(equal? 2 3)' | should_be '#f'
 
 
 # If we haven't exited yet then all tests must have passed
