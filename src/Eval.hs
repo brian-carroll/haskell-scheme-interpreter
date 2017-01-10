@@ -112,18 +112,18 @@ apply lispfunc args =
                         Nothing ->
                             return env
 
-                evalBody env =               -- evaluate the function body
-                    liftM last $             -- last line of function gives its return value
-                        mapM (eval env) body -- evaluate each line of the function in the context of its env vars
+                evalBody env =
+                    liftM last $        -- keep the result of the last evaluation since it's the return value
+                        mapM (eval env) body    -- evaluate each form in the function body
             in
                 if not rightNumberOfArgs then
                     throwError $ NumArgs (toInteger $ length params) args
                 else
-                    (liftIO $
-                        bindVars closure $  -- combine the input parameters with the closure environment
-                        zip params args)    -- match up param names with given input values
-                    >>= bindVarArgs varargs -- add varargs into the environment
-                    >>= evalBody            -- evaluate the function now that we have the full environment
+                    (liftIO $               -- 3. Lift from IO into IOThrowsError
+                        bindVars closure $  -- 2. Combine the input parameters with the closure environment
+                        zip params args)    -- 1. Match up param names with given input values
+                    >>= bindVarArgs varargs -- 4. Combine varargs into the environment
+                    >>= evalBody            -- 5. Evaluate the function body
 
         PrimitiveFunc func ->
             liftThrows $ func args
