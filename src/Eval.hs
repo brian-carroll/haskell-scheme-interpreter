@@ -95,12 +95,12 @@ apply lispfunc args =
     case lispfunc of
         Func params varargs body closure ->
             let
-                wrongNumberOfArgs =
+                rightNumberOfArgs =
                     case varargs of
                         Just _ ->
                             length args >= length params
                         Nothing ->
-                            length args /= length params
+                            length args == length params
 
                 remainingArgs =
                     drop (length params) args
@@ -116,7 +116,7 @@ apply lispfunc args =
                     liftM last $             -- last line of function gives its return value
                         mapM (eval env) body -- evaluate each line of the function in the context of its env vars
             in
-                if wrongNumberOfArgs then
+                if not rightNumberOfArgs then
                     throwError $ NumArgs (toInteger $ length params) args
                 else
                     (liftIO $
