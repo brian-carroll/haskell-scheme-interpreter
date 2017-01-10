@@ -8,7 +8,7 @@ import Control.Monad (liftM)
 
 -- Local modules
 import Parser (readExpr)
-import Eval (eval, nullEnv, Env, runIOThrows, liftThrows)
+import Eval (eval, primitiveBindings, Env, runIOThrows, liftThrows)
 
 
 -- ----
@@ -59,10 +59,10 @@ until_ pred prompt action = do
 -- Create empty environment, then evaluate and print one expression
 runOne :: String -> IO ()
 runOne expr =
-    nullEnv >>= flip evalAndPrint expr
+    primitiveBindings >>= flip evalAndPrint expr
 
 
 -- Create empty environment, then apply (evalAndPrint env) to each line of input
 runRepl :: IO ()
 runRepl =
-    nullEnv >>= until_ (== "quit") (readPrompt "Lisp>>> ") . evalAndPrint
+    primitiveBindings >>= until_ (== "quit") (readPrompt "Lisp>>> ") . evalAndPrint

@@ -2,11 +2,19 @@ module LispTypes
     ( LispVal (..)
     , LispError (..)
     , ThrowsError
+    , Env
     )
     where
 
 import Text.ParserCombinators.Parsec (ParseError)
 import Control.Monad.Error (Error, noMsg, strMsg)
+import Data.IORef (IORef)
+
+
+-- Environment to store a map of Lisp variables
+-- Lisp variables are mutable. Use IORef to update them inside IO monad
+type Env =
+    IORef [(String, IORef LispVal)]
 
 
 -- -----------
@@ -21,6 +29,12 @@ data LispVal
     | String String
     | Character Char
     | Bool Bool
+    | PrimitiveFunc ([LispVal] -> ThrowsError LispVal)
+    | Func  { params :: [String]        -- parameter names
+            , vararg :: (Maybe String)  -- variable-length arg list
+            , body :: [LispVal]         -- function body, as a list of Lisp forms
+            , closure :: Env            -- environment the function was created in
+            }
 
 instance Show LispVal where show = showVal
 
@@ -33,6 +47,13 @@ showVal (Bool False) = "#f"
 showVal (Character c) = "#\\" ++ [c]
 showVal (List contents) = "(" ++ unwordsList contents ++ ")"
 showVal (DottedList h t) = "(" ++ unwordsList h ++ " . " ++ showVal t ++ ")"
+showVal (PrimitiveFunc _) = "<primitive>"
+showVal (Func {params = args, vararg = varargs, body = _body, closure = _env}) =
+    "(lambda (" ++ unwords (map show args) ++
+        (case varargs of
+            Nothing -> ""
+            Just arg -> " . " ++ arg
+        ) ++ ") ...)"
 
 
 unwordsList :: [LispVal] -> String

@@ -7,6 +7,7 @@ module Eval.Env
     , setVar
     , defineVar
     , nullEnv
+    , bindVars
     )
     where
 
@@ -17,18 +18,12 @@ import Control.Monad.Trans (liftIO)
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
 
 -- Local modules
-import LispTypes (LispVal (..), LispError (..), ThrowsError)
+import LispTypes (LispVal (..), LispError (..), ThrowsError, Env)
 
 
 -- -----
 -- Types
 -- -----
-
--- Environment to store a map of Lisp variables
--- Lisp variables are mutable. Use IORef to update them inside IO monad
-type Env =
-    IORef [(String, IORef LispVal)]
-
 
 -- Type to allow us to throw LispErrors in the IO monad
 type IOThrowsError =
