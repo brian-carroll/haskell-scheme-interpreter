@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./compile.sh lisp
+./compile.sh
 
 trap "exit 1" TERM
 export TOP_PID=$$

@@ -1,15 +1,13 @@
 #!/bin/bash
 
-if [ -z $1 ]
+if [ "$1" == "--clean" ]
 then
-    EXECUTABLE_NAME="lisp"
-else
-    EXECUTABLE_NAME=$1
+    find .ghc ! -name .gitignore -type f | xargs rm -f
 fi
 
 cd src
 ghc --make \
-    -o ../bin/$EXECUTABLE_NAME \
+    -o ../bin/lisp \
     -outputdir ../.ghc \
     -W \
     Main.hs
