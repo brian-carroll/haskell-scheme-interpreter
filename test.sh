@@ -20,11 +20,6 @@ function parser_test {
     bin/lisp "(quote $1)" | should_be "$2"
 }
 
-function repl {
-    local MULTIPLE_LISP_EXPRS=$1
-    echo -e $MULTIPLE_LISP_EXPRS | bin/lisp 2>/dev/null
-}
-
 function remove_prompt {
     local INPUT=$(cat /dev/stdin)
     echo ${INPUT#"Lisp>>> "}
@@ -38,13 +33,39 @@ function last_result {
 
 #____________________________________________________________________________
 
+# User-defined functions
+echo "(define (counter inc) (lambda (x) (set! inc (+ x inc)) inc))
+(define my-count (counter 5))
+(my-count 3)
+quit" | bin/lisp | last_result | should_be '8'
+
+echo '(define (f x y) (+ x y))
+(f 1 2 3)
+quit' | bin/lisp | last_result | should_be 'Expected 2 args; found values (1 2 3)'
+
+echo '(define (f x y) (+ x y))
+(f 1)
+quit' | bin/lisp | last_result | should_be 'Expected 2 args; found values (1)'
+
+
 
 # Variables (get, define, set)
-repl '(+ x 1)' | last_result | should_be "Getting an unbound variable: x"
-repl '(set! x 123)' | last_result | should_be "Setting an unbound variable: x"
-repl '(define x 123)\n(+ x 1)' | last_result | should_be "124"
-repl '(define x 123)\n(set! x 321)\n(+ x 1)' | last_result | should_be "322"
-repl '(define x 123)\n(define x 321)\n(+ x 1)' | last_result | should_be "322"
+bin/lisp '(+ x 1)' | last_result | should_be "Getting an unbound variable: x"
+bin/lisp '(set! x 123)' | last_result | should_be "Setting an unbound variable: x"
+
+echo '(define x 123)
+(+ x 1)
+quit' | bin/lisp | last_result | should_be "124"
+
+echo '(define x 123)
+(set! x 321)
+(+ x 1)
+quit' | bin/lisp | last_result | should_be "322"
+
+echo '(define x 123)
+(define x 321)
+(+ x 1)
+quit' | bin/lisp | last_result | should_be "322"
 
 
 #____________________________________________________________________________
