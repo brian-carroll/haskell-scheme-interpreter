@@ -15,7 +15,7 @@ module Eval.Env
 -- Libraries
 import Control.Monad.Error (liftM, throwError, catchError, ErrorT, runErrorT)
 import Control.Monad.Trans (liftIO)
-import Data.IORef (IORef, newIORef, readIORef, writeIORef)
+import Data.IORef (newIORef, readIORef, writeIORef)
 
 -- Local modules
 import LispTypes (LispVal (..), LispError (..), ThrowsError, Env)
@@ -97,8 +97,9 @@ defineVar envRef var value = do
 -- Bind several vars at once (e.g. when a function is called)
 bindVars :: Env -> [(String, LispVal)] -> IO Env
 bindVars envRef bindings =
-        -- Get latest env value from its ref, prepend the new bindings, and create a new ref to new env value
-        readIORef envRef >>= extendEnv bindings >>= newIORef
+        readIORef envRef            -- dereference to get latest environment state
+            >>= extendEnv bindings  -- add the new bindings to the environment
+            >>= newIORef            -- create a reference to this new updated environment
     where
         -- Create list of new (name, ref) pairs and prepend to environment
         extendEnv bindings env =

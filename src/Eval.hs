@@ -91,36 +91,45 @@ eval env val =
 
 -- Apply function to args
 apply :: LispVal -> [LispVal] -> IOThrowsError LispVal
-apply (PrimitiveFunc func) args =
-    liftThrows $ func args
+apply lispfunc args =
+    case lispfunc of
+        Func params varargs body closure ->
+            let
+                wrongNumberOfArgs =
+                    case varargs of
+                        Just _ ->
+                            length args >= length params
+                        Nothing ->
+                            length args /= length params
 
-apply (Func params varargs body closure) args =
-        if wrongNumberOfArgs then
-            throwError $ NumArgs (toInteger $ length params) args
-        else
-            (liftIO $ bindVars closure $ zip params args) >>= bindVarArgs varargs >>= evalBody
-    where
-        wrongNumberOfArgs =
-            case varargs of
-                Just _ ->
-                    length args >= length params
-                Nothing ->
-                    length args /= length params
+                remainingArgs =
+                    drop (length params) args
 
-        remainingArgs =
-            drop (length params) args
-        bindVarArgs arg env =
-            case arg of
-                Just argName ->
-                    liftIO $ bindVars env [(argName, List $ remainingArgs)]
-                Nothing ->
-                    return env
+                bindVarArgs arg env =
+                    case arg of
+                        Just argName ->
+                            liftIO $ bindVars env [(argName, List $ remainingArgs)]
+                        Nothing ->
+                            return env
 
-        evalBody env =               -- evaluate the function body
-            liftM last $             -- last line of function gives its return value
-                mapM (eval env) body -- evaluate each line of the function in the context of its env vars
+                evalBody env =               -- evaluate the function body
+                    liftM last $             -- last line of function gives its return value
+                        mapM (eval env) body -- evaluate each line of the function in the context of its env vars
+            in
+                if wrongNumberOfArgs then
+                    throwError $ NumArgs (toInteger $ length params) args
+                else
+                    (liftIO $
+                        bindVars closure $  -- combine the input parameters with the closure environment
+                        zip params args)    -- match up param names with given input values
+                    >>= bindVarArgs varargs -- add varargs into the environment
+                    >>= evalBody            -- evaluate the function now that we have the full environment
 
-apply _ _ = undefined
+        PrimitiveFunc func ->
+            liftThrows $ func args
+
+        _ ->
+            undefined
 
 
 primitiveBindings :: IO Env
