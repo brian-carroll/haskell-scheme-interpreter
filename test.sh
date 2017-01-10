@@ -91,7 +91,7 @@ expecting space or ")"'
 
 
 # Error for undefined function
-bin/lisp '(undefinedfunction 42)' | should_be 'Unrecognized primitive function: "undefinedfunction"'
+bin/lisp '(undefinedfunction 42)' | should_be 'Getting an unbound variable: undefinedfunction'
 
 
 # Arithmetic primitive functions

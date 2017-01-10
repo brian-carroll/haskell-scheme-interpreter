@@ -19,48 +19,73 @@ import Eval.Primitives (primitives)
 
 -- Evaluate a Lisp expression
 eval :: Env -> LispVal -> IOThrowsError LispVal
-eval _env val@(String _) = return val
-eval _env val@(Number _) = return val
-eval _env val@(Bool _) = return val
-eval _env val@(Character _) = return val
-eval _env val@(DottedList _ _) = return val
-eval _env val@(List []) = return val
+eval env val =
+    case val of
+        String _ ->
+            return val
 
-eval env (Atom id) = getVar env id
+        Number _ ->
+            return val
 
-eval _env (List [Atom "quote", val]) = return val
+        Bool _ ->
+            return val
 
-eval env (List [Atom "if", pred, conseq, alt]) = do 
-    result <- eval env pred
-    case result of
-        Bool False -> eval env alt
-        _ -> eval env conseq
-eval _env (List (Atom "if" : badArgList)) = throwError $ NumArgs 3 badArgList
+        Character _ ->
+            return val
 
-eval env (List [Atom "set!", Atom var, form]) =
-     eval env form >>= setVar env var
+        DottedList _ _ ->
+            return val
 
-eval env (List [Atom "define", Atom var, form]) =
-     eval env form >>= defineVar env var
-eval env (List (Atom "define" : List (Atom var : params) : body)) =
-     makeNormalFunc env params body >>= defineVar env var
-eval env (List (Atom "define" : DottedList (Atom var : params) varargs : body)) =
-     makeVarArgs varargs env params body >>= defineVar env var
+        List [] ->
+            return val
 
-eval env (List (Atom "lambda" : List params : body)) =
-     makeNormalFunc env params body
-eval env (List (Atom "lambda" : DottedList params varargs : body)) =
-     makeVarArgs varargs env params body
-eval env (List (Atom "lambda" : varargs@(Atom _) : body)) =
-     makeVarArgs varargs env [] body
+        Atom varName ->
+            getVar env varName
 
-eval env (List (function : args)) = do
-     func <- eval env function
-     argVals <- mapM (eval env) args
-     apply func argVals
+        List [Atom "quote", val] ->
+            return val
 
-eval _env badForm =
-    throwError $ BadSpecialForm "Unrecognized special form" badForm
+        List [Atom "if", pred, conseq, alt] ->
+            do 
+                result <- eval env pred
+                case result of
+                    Bool False ->
+                        eval env alt
+                    _ ->
+                        eval env conseq
+
+        List (Atom "if" : badArgList) ->
+            throwError $ NumArgs 3 badArgList
+
+        List [Atom "set!", Atom var, form] ->
+            eval env form >>= setVar env var
+
+        List [Atom "define", Atom var, form] ->
+            eval env form >>= defineVar env var
+
+        List (Atom "define" : List (Atom var : params) : body) ->
+            makeNormalFunc env params body >>= defineVar env var
+
+        List (Atom "define" : DottedList (Atom var : params) varargs : body) ->
+            makeVarArgs varargs env params body >>= defineVar env var
+
+        List (Atom "lambda" : List params : body) ->
+            makeNormalFunc env params body
+
+        List (Atom "lambda" : DottedList params varargs : body) ->
+            makeVarArgs varargs env params body
+
+        List (Atom "lambda" : varargs@(Atom _) : body) ->
+            makeVarArgs varargs env [] body
+
+        List (function : args) ->
+            do
+                func <- eval env function
+                argVals <- mapM (eval env) args
+                apply func argVals
+
+        badForm ->
+            throwError $ BadSpecialForm "Unrecognized special form" badForm
 
 
 
