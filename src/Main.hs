@@ -2,13 +2,14 @@ module Main where
 
 -- Libraries
 import System.Environment (getArgs)
-import System.IO (hFlush, stdout)
+import System.IO (hFlush, hPutStrLn, stdout)
 import Control.Monad (liftM)
 
 
 -- Local modules
 import Parser (readExpr)
-import Eval (eval, primitiveBindings, Env, runIOThrows, liftThrows)
+import Eval (eval, primitiveBindings, Env, runIOThrows, liftThrows, bindVars)
+import LispTypes (LispVal (..))
 
 
 -- ----
@@ -17,10 +18,45 @@ import Eval (eval, primitiveBindings, Env, runIOThrows, liftThrows)
 main :: IO ()
 main = do
     args <- getArgs
-    case length args of
-        0 -> runRepl
-        1 -> runOne $ args !! 0
-        _ -> putStrLn "Program takes only 0 or 1 argument"
+    case args of
+        [] ->
+            runRepl
+
+        -- If first command line arg starts with '(' then assume it's a Lisp expression
+        (('(' : _) : _) ->
+            runOne $ args !! 0
+
+        -- Otherwise assume it's a filename
+        _ ->
+            runFile args
+
+
+-- Evaluate and print one expression
+runOne :: String -> IO ()
+runOne expr =
+    primitiveBindings >>= flip evalAndPrint expr
+
+
+-- Read a Scheme file and execute it
+runFile :: [String] -> IO ()
+runFile args =
+    let
+        firstArgLispVal =
+            String (args !! 0)
+        otherArgsLispVal =
+            List $ map String $ drop 1 args
+        loadCommandLisp =
+            List [Atom "load", firstArgLispVal]
+    in do
+        env <- primitiveBindings >>= flip bindVars [("args", otherArgsLispVal)] 
+        (runIOThrows $ liftM show $ eval env loadCommandLisp)
+            >>= hPutStrLn stdout
+
+
+-- Apply (evalAndPrint env) to each line of input ('env' is passed in via >>=)
+runRepl :: IO ()
+runRepl =
+    primitiveBindings >>= until_ (== "quit") (readPrompt "Lisp>>> ") . evalAndPrint
 
 
 -- -----
@@ -54,15 +90,3 @@ until_ pred prompt action = do
    if pred result
       then return ()
       else action result >> until_ pred prompt action
-
-
--- Create empty environment, then evaluate and print one expression
-runOne :: String -> IO ()
-runOne expr =
-    primitiveBindings >>= flip evalAndPrint expr
-
-
--- Create empty environment, then apply (evalAndPrint env) to each line of input
-runRepl :: IO ()
-runRepl =
-    primitiveBindings >>= until_ (== "quit") (readPrompt "Lisp>>> ") . evalAndPrint

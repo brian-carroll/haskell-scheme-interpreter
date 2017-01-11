@@ -47,9 +47,12 @@ listEq :: ([LispVal] -> ThrowsError LispVal) -> [LispVal] -> [LispVal] -> Throws
 listEq equalityFn arg1 arg2 =
     return $ Bool $
         (length arg1 == length arg2) && (all eqvPair $ zip arg1 arg2)
-    where eqvPair (x1, x2) = case equalityFn [x1, x2] of
-            Left err -> False
-            Right (Bool val) -> val
+    where
+        eqvPair (x1, x2) =
+            case equalityFn [x1, x2] of
+                Left _ -> False
+                Right (Bool val) -> val
+                Right _ -> undefined
 
 
 -- Helper function to test equality under a particular unpacking function

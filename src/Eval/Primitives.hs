@@ -1,12 +1,82 @@
-module Eval.Primitives (primitives) where
+module Eval.Primitives
+        ( primitives
+        , ioPrimitives
+        , parseFile
+        )
+    where
 
 -- Library modules
 import Control.Monad.Error (throwError)
+import System.IO (IOMode (ReadMode, WriteMode), hGetLine, hPrint, hClose, stdin, stdout, openFile)
+import Control.Monad (liftM)
+import Control.Monad.Trans (liftIO)
+
 
 -- Local modules
-import LispTypes (LispVal (..), LispError (..), ThrowsError)
+import LispTypes (LispVal (..), LispError (..), ThrowsError, IOThrowsError)
 import Eval.WeakTyping (eqv, equal, unpackBool, unpackNum, unpackStr)
+import Eval.Env (liftThrows)
+import Parser (readExpr, readExprList)
 
+
+-- IO primitives
+ioPrimitives :: (LispVal -> [LispVal] -> IOThrowsError LispVal) -> [(String, [LispVal] -> IOThrowsError LispVal)]
+ioPrimitives apply =
+    [ ("apply", applyProc apply)
+    , ("open-input-file", makePort ReadMode)
+    , ("open-output-file", makePort WriteMode)
+    , ("close-input-port", closePort)
+    , ("close-output-port", closePort)
+    , ("read", readProc)
+    , ("write", writeProc)
+    , ("read-contents", readContents)
+    , ("read-all", readAll)
+    ]
+
+
+applyProc :: (LispVal -> [LispVal] -> IOThrowsError LispVal) -> [LispVal] -> IOThrowsError LispVal
+applyProc apply [func, List args] = apply func args
+applyProc apply (func : args)     = apply func args
+applyProc _ _ = undefined
+
+
+makePort :: IOMode -> [LispVal] -> IOThrowsError LispVal
+makePort mode [String filename] = liftM Port $ liftIO $ openFile filename mode
+makePort _ _ = undefined
+
+
+closePort :: [LispVal] -> IOThrowsError LispVal
+closePort [Port port] = liftIO $ hClose port >> (return $ Bool True)
+closePort _           = return $ Bool False
+
+
+readProc :: [LispVal] -> IOThrowsError LispVal
+readProc []          = readProc [Port stdin]
+readProc [Port port] = (liftIO $ hGetLine port) >>= liftThrows . readExpr
+readProc _ = undefined
+
+
+writeProc :: [LispVal] -> IOThrowsError LispVal
+writeProc [obj]            = writeProc [obj, Port stdout]
+writeProc [obj, Port port] = liftIO $ hPrint port obj >> (return $ Bool True)
+writeProc _ = undefined
+
+
+readContents :: [LispVal] -> IOThrowsError LispVal
+readContents [String filename] = liftM String $ liftIO $ readFile filename
+readContents _ = undefined
+
+
+parseFile :: String -> IOThrowsError [LispVal]
+parseFile filename = (liftIO $ readFile filename) >>= liftThrows . readExprList
+
+
+readAll :: [LispVal] -> IOThrowsError LispVal
+readAll [String filename] = liftM List $ parseFile filename
+readAll _ = undefined
+
+
+-- Purely functional primitives
 
 primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives =

@@ -18,17 +18,12 @@ import Control.Monad.Trans (liftIO)
 import Data.IORef (newIORef, readIORef, writeIORef)
 
 -- Local modules
-import LispTypes (LispVal (..), LispError (..), ThrowsError, Env)
+import LispTypes (LispVal (..), LispError (..), ThrowsError, Env, IOThrowsError)
 
 
 -- -----
 -- Types
 -- -----
-
--- Type to allow us to throw LispErrors in the IO monad
-type IOThrowsError =
-    ErrorT LispError IO  -- partially applied, missing last type arg
-
 
 -- Convert ThrowsError values into IOThrowsError values
 liftThrows :: ThrowsError a -> IOThrowsError a

@@ -3,18 +3,24 @@ module LispTypes
     , LispError (..)
     , ThrowsError
     , Env
+    , IOThrowsError
     )
     where
 
 import Text.ParserCombinators.Parsec (ParseError)
-import Control.Monad.Error (Error, noMsg, strMsg)
+import Control.Monad.Error (Error, noMsg, strMsg, ErrorT)
 import Data.IORef (IORef)
+import System.IO (Handle)
 
 
 -- Environment to store a map of Lisp variables
 -- Lisp variables are mutable. Use IORef to update them inside IO monad
 type Env =
     IORef [(String, IORef LispVal)]
+
+-- Type to allow us to throw LispErrors in the IO monad
+type IOThrowsError =
+    ErrorT LispError IO  -- partially applied, missing last type arg
 
 
 -- -----------
@@ -35,6 +41,9 @@ data LispVal
             , body :: [LispVal]         -- function body, as a list of Lisp forms
             , closure :: Env            -- environment the function was created in
             }
+    | IOFunc ([LispVal] -> IOThrowsError LispVal)
+    | Port Handle
+
 
 instance Show LispVal where show = showVal
 
@@ -54,6 +63,8 @@ showVal (Func {params = args, vararg = varargs, body = _body, closure = _env}) =
             Nothing -> ""
             Just arg -> " . " ++ arg
         ) ++ ") ...)"
+showVal (Port handle)   = "<IO port " ++ show handle ++ " >"
+showVal (IOFunc _) = "<IO primitive>"
 
 
 unwordsList :: [LispVal] -> String

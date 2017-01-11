@@ -4,6 +4,7 @@ module Eval
     , primitiveBindings
     , liftThrows
     , runIOThrows
+    , bindVars
     )
     where
 
@@ -14,7 +15,30 @@ import Control.Monad.Trans (liftIO)
 -- Local modules
 import LispTypes (LispVal (..), LispError (..))
 import Eval.Env (getVar, setVar, defineVar, nullEnv, IOThrowsError, Env, liftThrows, runIOThrows, bindVars)
-import Eval.Primitives (primitives)
+import Eval.Primitives (primitives, ioPrimitives, parseFile)
+
+
+-- Action to be executed on startup
+primitiveBindings :: IO Env
+primitiveBindings =
+        nullEnv >>= (flip bindVars (
+                        map (makeFunc IOFunc) (ioPrimitives apply)
+                        ++ map (makeFunc PrimitiveFunc) primitives
+                    ))
+    where
+        makeFunc constructor (var, func) =
+            (var, constructor func)
+
+
+makeFunc varargs env params body =
+    return $ Func (map show params) varargs body env
+
+makeNormalFunc =
+    makeFunc Nothing
+
+makeVarArgs =
+    makeFunc . Just . show
+
 
 
 -- Evaluate a Lisp expression
@@ -78,6 +102,9 @@ eval env val =
         List (Atom "lambda" : varargs@(Atom _) : body) ->
             makeVarArgs varargs env [] body
 
+        List [Atom "load", String filename] ->
+            parseFile filename >>= liftM last . mapM (eval env)
+
         List (function : args) ->
             do
                 func <- eval env function
@@ -128,23 +155,8 @@ apply lispfunc args =
         PrimitiveFunc func ->
             liftThrows $ func args
 
+        IOFunc func ->
+            func args
+
         _ ->
             undefined
-
-
-primitiveBindings :: IO Env
-primitiveBindings =
-        nullEnv >>= (flip bindVars $ map makePrimitiveFunc primitives)
-    where
-        makePrimitiveFunc (var, func) =
-            (var, PrimitiveFunc func)
-
-
-makeFunc varargs env params body =
-    return $ Func (map show params) varargs body env
-
-makeNormalFunc =
-    makeFunc Nothing
-
-makeVarArgs =
-    makeFunc . Just . show

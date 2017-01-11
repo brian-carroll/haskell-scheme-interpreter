@@ -33,6 +33,43 @@ function last_result {
 
 #____________________________________________________________________________
 
+SCHEME_FILE="io-test-data/closure.scm"
+SCHEME_FILE_CONTENTS=$(cat $SCHEME_FILE)
+INFILE=$SCHEME_FILE
+OUTFILE="io-test-data/output.txt"
+
+# Command line: Load a Scheme file and execute it
+bin/lisp $SCHEME_FILE | should_be '8'
+
+# File IO
+bin/lisp '(open-input-file "'$INFILE'")'                        | should_be '<IO port {handle: '$INFILE'} >'
+bin/lisp '(close-input-port (open-input-file "'$INFILE'"))'     | should_be '#t'
+
+bin/lisp '(open-output-file "'$OUTFILE'")'                      | should_be '<IO port {handle: '$OUTFILE'} >'
+bin/lisp '(close-output-port (open-output-file "'$OUTFILE'"))'  | should_be '#t'
+
+bin/lisp '(read (open-input-file "'$INFILE'"))'                 | should_be "$( head -n 1 $INFILE )"
+bin/lisp '(read-contents "'$SCHEME_FILE'")'                     | should_be "\"$SCHEME_FILE_CONTENTS
+\""
+bin/lisp '(read-all "'$SCHEME_FILE'")' | should_be '((define (counter inc) (lambda (x) (set! inc (+ x inc)) inc)) (define my-count (counter 5)) (my-count 3))'
+
+# Write to file
+if ! rm $OUTFILE ; then
+    echo "Failed to delete $OUTFILE" && exit
+fi
+echo '(define outfile (open-output-file "'$OUTFILE'"))
+(write "hello world" outfile)
+(close-output-port outfile)
+quit' | bin/lisp | last_result | should_be '#t'
+cat $OUTFILE | should_be '"hello world"'
+
+# Apply
+echo '(define (f x y) (+ x y))
+(apply f 1 2)
+quit' | bin/lisp | last_result | should_be '3'
+
+
+
 # User-defined functions
 echo "(define (counter inc) (lambda (x) (set! inc (+ x inc)) inc))
 (define my-count (counter 5))
