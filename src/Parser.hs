@@ -45,7 +45,18 @@ parseExprList =
         endBy parseExpr spaces
 
 
-
+parseExpr :: Parser LispVal
+parseExpr =
+    parseString
+    <|> (try parseCharacter)
+    <|> (try parseNumber)
+    <|> parseAtom
+    <|> parseQuoted
+    <|> do
+            char '('
+            x <- try parseList <|> parseDottedList
+            char ')'
+            return x
 
 
 parseList :: Parser LispVal
@@ -65,20 +76,6 @@ parseQuoted = do
     char '\''
     x <- parseExpr
     return $ List [Atom "quote", x]
-
-
-parseExpr :: Parser LispVal
-parseExpr =
-    parseString
-    <|> (try parseCharacter)
-    <|> (try parseNumber)
-    <|> parseAtom
-    <|> parseQuoted
-    <|> do
-            char '('
-            x <- try parseList <|> parseDottedList
-            char ')'
-            return x
 
 
 parseString :: Parser LispVal
