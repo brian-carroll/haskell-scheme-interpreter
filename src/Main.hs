@@ -7,7 +7,7 @@ import Control.Monad (liftM)
 
 
 -- Local modules
-import Parser (readExpr)
+import Parser (readExprOrNothing)
 import Eval (eval, primitiveBindings, Env, runIOThrows, liftThrows, bindVars)
 import LispTypes (LispVal (..))
 
@@ -74,9 +74,13 @@ readPrompt prompt =
 
 evalString :: Env -> String -> IO String
 evalString env expr =
-    runIOThrows $   -- Convert IOThrowsError action into IO action
-    liftM show $    -- Convert evaluated result to a string, within IOThrowsError
-    (liftThrows $ readExpr expr) >>= eval env  -- Lift readExpr from ThrowsError into IOThrowsError, then evaluate
+    runIOThrows $ do
+        maybeLispVal <- liftThrows $ readExprOrNothing expr
+        case maybeLispVal of
+            Nothing ->
+                return ""
+            Just lispVal ->
+                liftM show $ eval env lispVal
 
 
 evalAndPrint :: Env -> String -> IO ()
