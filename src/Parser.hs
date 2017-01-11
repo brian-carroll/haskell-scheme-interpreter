@@ -1,8 +1,9 @@
-module Parser (readExpr, readExprList) where
+module Parser (readExpr, readMaybeExpr, readExprList) where
 
 -- Libraries
-import Text.ParserCombinators.Parsec (Parser, (<|>), anyChar, char, digit, endBy, letter,
-            many, many1, noneOf, oneOf, parse, sepBy, skipMany1, space, try, unexpected, eof)
+import Text.ParserCombinators.Parsec (Parser, (<|>), parse,
+            many, many1, noneOf, oneOf, endBy, sepBy, skipMany1, try, unexpected, optionMaybe, optional,
+            anyChar, char, digit, letter, space)
 import Control.Monad.Error (throwError, liftM, when)
 import Numeric (readOct, readHex)
 import qualified Data.Char
@@ -12,9 +13,9 @@ import LispTypes (LispVal (..), LispError (..), ThrowsError)
 
 
 
--- ------------------
--- HIGH LEVEL PARSING
--- ------------------
+-- -----------
+-- RUN PARSERS
+-- -----------
 readOrThrow :: Parser a -> String -> ThrowsError a
 readOrThrow parser input =
     case parse parser "lisp" input of
@@ -22,27 +23,33 @@ readOrThrow parser input =
         Right val -> return val
 
 
+readExpr :: String -> ThrowsError LispVal
 readExpr = readOrThrow parseExpr
--- readExpr :: String -> ThrowsError (Maybe LispVal)
--- readExpr = readOrThrow parseExprOrNothing
+
+
+readMaybeExpr :: String -> ThrowsError (Maybe LispVal)
+readMaybeExpr = readOrThrow parseMaybeExpr
 
 
 readExprList :: String -> ThrowsError [LispVal]
 readExprList = readOrThrow parseExprList
 
 
--- parseExprOrNothing :: Parser (Maybe LispVal)
--- parseExprOrNothing =
---     do
---         try spaces
---         (eof <|> parseExpr)
+-- ------------------
+-- HIGH LEVEL PARSERS
+-- ------------------
+parseMaybeExpr :: Parser (Maybe LispVal)
+parseMaybeExpr =
+    do
+        optional spacesOrComments
+        optionMaybe parseExpr   -- REPL input could be a blank line
 
 
 parseExprList :: Parser [LispVal]
 parseExprList =
     do
-        try spaces
-        endBy parseExpr spaces
+        optional spacesOrComments
+        endBy parseExpr spacesOrComments
 
 
 parseExpr :: Parser LispVal
@@ -61,13 +68,13 @@ parseExpr =
 
 parseList :: Parser LispVal
 parseList =
-    liftM List $ sepBy parseExpr spaces
+    liftM List $ sepBy parseExpr spacesOrComments
 
 
 parseDottedList :: Parser LispVal
 parseDottedList = do
-    head <- endBy parseExpr spaces
-    tail <- char '.' >> spaces >> parseExpr
+    head <- endBy parseExpr spacesOrComments
+    tail <- char '.' >> spacesOrComments >> parseExpr
     return $ DottedList head tail
 
 
@@ -135,8 +142,8 @@ comment =
         return ' '
 
 
-spaces :: Parser ()
-spaces =
+spacesOrComments :: Parser ()
+spacesOrComments =
     skipMany1 (space <|> comment)
 
 
