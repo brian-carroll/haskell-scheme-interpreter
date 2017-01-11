@@ -1,19 +1,39 @@
+;=============================
+; BrianScheme standard library
+;=============================
+
+
+;----------------
+; Falsy operators
+;----------------
 (define (not x)            (if x #f #t))
 (define (null? obj)        (if (eqv? obj '()) #t #f))
 
+;---------------
+; Identity etc.
+;---------------
 (define (list . objs)      objs)
 (define (id obj)           obj)
 (define (flip func)        (lambda (arg1 arg2) (func arg2 arg1)))
 
+;-----------------------
+; Functional combinators
+;-----------------------
 (define (curry func arg1)  (lambda (arg) (apply func (cons arg1 (list arg)))))
 (define (compose f g)      (lambda (arg) (f (apply g arg))))
 
+;---------------
+; Number tests
+;---------------
 (define zero?              (curry = 0))
 (define positive?          (curry < 0))
 (define negative?          (curry > 0))
 (define (odd? num)         (= (mod num 2) 1))
 (define (even? num)        (= (mod num 2) 0))
 
+;---------------
+; Folding
+;---------------
 (define (foldr func end lst)
     (if (null? lst)
         end
@@ -32,6 +52,9 @@
         (cons init '())
         (cons init (unfold func (func init) pred))))
 
+;-----------------------------
+; Variable number of arguments
+;-----------------------------
 (define (sum . lst)         (fold + 0 lst))
 (define (product . lst)     (fold * 1 lst))
 (define (and . lst)         (fold && #t lst))
@@ -49,9 +72,16 @@
         first
         rest))
 
+;---------------
+; Lists
+;---------------
 (define (length lst)        (fold (lambda (x y) (+ x 1)) 0 lst))
 (define (reverse lst)       (fold (flip cons) '() lst))
 
+
+;---------------------
+; Membership functions
+;---------------------
 (define (mem-helper pred op)
     (lambda (acc next)
         (if (and (not acc) (pred (op next)))
@@ -64,6 +94,9 @@
 (define (assv obj alist)     (fold (mem-helper (curry eqv? obj) car) #f alist))
 (define (assoc obj alist)    (fold (mem-helper (curry equal? obj) car) #f alist))
 
+;---------------
+; Map & filter
+;---------------
 (define (map func lst)
     (foldr
         (lambda (x y) (cons (func x) y))

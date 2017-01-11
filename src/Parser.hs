@@ -2,7 +2,7 @@ module Parser (readExpr, readExprList) where
 
 -- Libraries
 import Text.ParserCombinators.Parsec (Parser, (<|>), anyChar, char, digit, endBy, letter,
-            many, many1, noneOf, oneOf, parse, sepBy, skipMany1, space, try, unexpected)
+            many, many1, noneOf, oneOf, parse, sepBy, skipMany1, space, try, unexpected, eof)
 import Control.Monad.Error (throwError, liftM, when)
 import Numeric (readOct, readHex)
 import qualified Data.Char
@@ -21,8 +21,31 @@ readOrThrow parser input =
         Left err  -> throwError $ Parser err
         Right val -> return val
 
+
 readExpr = readOrThrow parseExpr
-readExprList = readOrThrow (endBy parseExpr spaces)
+-- readExpr :: String -> ThrowsError (Maybe LispVal)
+-- readExpr = readOrThrow parseExprOrNothing
+
+
+readExprList :: String -> ThrowsError [LispVal]
+readExprList = readOrThrow parseExprList
+
+
+-- parseExprOrNothing :: Parser (Maybe LispVal)
+-- parseExprOrNothing =
+--     do
+--         try spaces
+--         (eof <|> parseExpr)
+
+
+parseExprList :: Parser [LispVal]
+parseExprList =
+    do
+        try spaces
+        endBy parseExpr spaces
+
+
+
 
 
 parseList :: Parser LispVal
@@ -105,9 +128,19 @@ symbol =
     oneOf "!#$%&|*+-/:<=>?@^_~"
 
 
+-- Comment: Transform everything from ';' to '\n' into a space
+-- This keeps Haskell type checker happy (whereas returning '()' doesn't)
+comment :: Parser Char
+comment =
+    do
+        char ';'
+        many (noneOf "\n")
+        return ' '
+
+
 spaces :: Parser ()
 spaces =
-    skipMany1 space
+    skipMany1 (space <|> comment)
 
 
 escapedChar :: Parser Char
