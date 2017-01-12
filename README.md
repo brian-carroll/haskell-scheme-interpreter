@@ -16,9 +16,14 @@ Comments
 --------
 - Scheme comments start with `;` and go to the end of the line
 - Effectively they are treated the same as a space (delimiter between expressions)
+
 To do:
 - [x] Modify the `spaces` parser to become `spacesOrComments`
 - [x] Deal with spaces at _start_ of input, which cause exceptions in the interpreter
+    - [x] Parse `optional spacesOrComments` at start of input (in REPL and loaded files)
+    - [x] For the REPL, use `Maybe` to deal with completely blank lines
+        - This means I can hit Enter a few times without getting error messages back!
+        - REPL only. When loading a file, you kinda _want_ an error if it's empty.
 
 
 History
