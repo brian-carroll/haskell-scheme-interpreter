@@ -46,6 +46,33 @@ Tail Call Optimisation
 ----------------------
 - This would be interesting. TCO kind of fascinates me for some reason.
 - Does implementing in Haskell give me this for free somehow?
+    - No! Proved it by testing
+- Evalutating a function
+    - eval
+        - func <- eval env function  -- dereference name Atom
+        - argVals <- mapM (eval env) args
+        - apply func argVals
+    - apply
+        -   evalBody env =
+                liftM last $
+                    mapM (eval env) body
+        -   (liftIO $
+                bindVars closure $
+                zip params args)
+            >>= bindVarArgs varargs
+            >>= evalBody
+- Detecting Tail Call
+    - Extract last expression in function body
+    - Check if it's a list whos first element is an Atom
+    - Evaluate the Atom and check if its value is equal to the current func
+- Executing tail call
+    - Evaluate the args
+    - Overwrite the same closure env with new inputs (bindVars and bindVarArgs)
+    - Map over the initial expressions again
+- Implement a tail-recursive loop in Haskell to do the Scheme tail recursion!!
+- In `apply` don't call `eval` on the last expression if it's a tail call.
+- Instead re-implement the bit of `eval` that would have been called, so that we don't get deep recursion in Haskell
+- 
 
 
 Macro expansion

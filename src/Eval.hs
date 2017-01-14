@@ -11,6 +11,7 @@ module Eval
 -- Libraries
 import Control.Monad.Error (throwError, liftM)
 import Control.Monad.Trans (liftIO)
+import Debug.Trace (trace)
 
 -- Local modules
 import LispTypes (LispVal (..), LispError (..))
@@ -43,7 +44,13 @@ makeVarArgs =
 
 -- Evaluate a Lisp expression
 eval :: Env -> LispVal -> IOThrowsError LispVal
-eval env val =
+eval = evalHelp False
+
+evalTail :: Env -> LispVal -> IOThrowsError LispVal
+evalTail = evalHelp True
+
+evalHelp :: Bool -> Env -> LispVal -> IOThrowsError LispVal
+evalHelp isTailContext env val =
     case val of
         String _ ->
             return val
@@ -70,13 +77,13 @@ eval env val =
             return val
 
         List [Atom "if", pred, conseq, alt] ->
-            do 
+            do
                 result <- eval env pred
                 case result of
                     Bool False ->
-                        eval env alt
+                        evalHelp isTailContext env alt
                     _ ->
-                        eval env conseq
+                        evalHelp isTailContext env conseq
 
         List (Atom "if" : badArgList) ->
             throwError $ NumArgs 3 badArgList
@@ -108,17 +115,23 @@ eval env val =
         List (function : args) ->
             do
                 func <- eval env function
-                argVals <- mapM (eval env) args
-                apply func argVals
+                argVals <- mapM (evalHelp False env) args
+                applyHelp isTailContext func argVals
 
         badForm ->
             throwError $ BadSpecialForm "Unrecognized special form" badForm
 
 
 
+
 -- Apply function to args
 apply :: LispVal -> [LispVal] -> IOThrowsError LispVal
-apply lispfunc args =
+apply = applyHelp False
+
+
+-- Apply function to args
+applyHelp :: Bool -> LispVal -> [LispVal] -> IOThrowsError LispVal
+applyHelp isTailContext lispfunc args =
     case lispfunc of
         Func params varargs body closure ->
             let
@@ -139,18 +152,19 @@ apply lispfunc args =
                         Nothing ->
                             return env
 
-                evalBody env =
-                    liftM last $        -- keep the result of the last evaluation since it's the return value
-                        mapM (eval env) body    -- evaluate each form in the function body
             in
                 if not rightNumberOfArgs then
                     throwError $ NumArgs (toInteger $ length params) args
-                else
-                    (liftIO $               -- 3. Lift from IO into IOThrowsError
-                        bindVars closure $  -- 2. Combine the input parameters with the closure environment
-                        zip params args)    -- 1. Match up param names with given input values
-                    >>= bindVarArgs varargs -- 4. Combine varargs into the environment
-                    >>= evalBody            -- 5. Evaluate the function body
+                else do
+                    env <- (liftIO $                -- 3. Lift from IO into IOThrowsError
+                            bindVars closure $      -- 2. Combine the input parameters with the closure environment
+                            -- trace ("tail: " ++ (show isTailContext) ++ "\t" ++ (show $ zip params args)) $ 
+                            zip params args)        -- 1. Match up param names with given input values
+                            >>= bindVarArgs varargs -- 4. Combine varargs into the environment
+                    mapM (eval env) (init body)    -- 5. Evaluate all forms except the tail expression
+                    evalTail
+                        env --(trace (show env) env)
+                        (last body)            -- 6. Evaluate tail expression
 
         PrimitiveFunc func ->
             liftThrows $ func args

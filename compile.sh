@@ -10,4 +10,5 @@ ghc --make \
     -o ../bin/lisp \
     -outputdir ../.ghc \
     -W \
+    -O2 \
     Main.hs
