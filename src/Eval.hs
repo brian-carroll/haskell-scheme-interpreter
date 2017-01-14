@@ -109,8 +109,8 @@ eval env val =
             do
                 func <- eval env function
                 argVals <- mapM (eval env) args
-                (funcEnv, returnExpr) <- applyHelp func argVals
-                eval funcEnv returnExpr
+                (funcEnv, returnExpr) <- applyHelp func $! argVals
+                eval funcEnv $! returnExpr
 
         badForm ->
             throwError $ BadSpecialForm "Unrecognized special form" badForm
