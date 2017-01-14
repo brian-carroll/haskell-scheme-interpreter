@@ -109,7 +109,8 @@ eval env val =
             do
                 func <- eval env function
                 argVals <- mapM (eval env) args
-                apply func argVals
+                (funcEnv, returnExpr) <- applyHelp func argVals
+                eval funcEnv returnExpr
 
         badForm ->
             throwError $ BadSpecialForm "Unrecognized special form" badForm
@@ -119,6 +120,13 @@ eval env val =
 -- Apply function to args
 apply :: LispVal -> [LispVal] -> IOThrowsError LispVal
 apply lispfunc args =
+    do
+        (env, lastFuncExpr) <- applyHelp lispfunc args
+        eval env lastFuncExpr
+
+
+applyHelp :: LispVal -> [LispVal] -> IOThrowsError (Env, LispVal)
+applyHelp lispfunc args =
     case lispfunc of
         Func params varargs body closure ->
             let
@@ -138,25 +146,28 @@ apply lispfunc args =
                             liftIO $ bindVars env [(argName, List $ remainingArgs)]
                         Nothing ->
                             return env
-
-                evalBody env =
-                    liftM last $        -- keep the result of the last evaluation since it's the return value
-                        mapM (eval env) body    -- evaluate each form in the function body
             in
                 if not rightNumberOfArgs then
                     throwError $ NumArgs (toInteger $ length params) args
-                else
-                    (liftIO $               -- 3. Lift from IO into IOThrowsError
-                        bindVars closure $  -- 2. Combine the input parameters with the closure environment
-                        zip params args)    -- 1. Match up param names with given input values
-                    >>= bindVarArgs varargs -- 4. Combine varargs into the environment
-                    >>= evalBody            -- 5. Evaluate the function body
+                else do
+                    env <- (liftIO $                -- 3. Lift from IO into IOThrowsError
+                            bindVars closure $      -- 2. Combine the input parameters with the closure environment
+                            zip params args)        -- 1. Match up param names with given input values
+                            >>= bindVarArgs varargs -- 4. Combine varargs into the environment
+                    mapM (eval env) (init body)     -- 5. Evaluate the function body, except the last expression
+                    return (env, (last body))              -- 6. Pass back arguments to 'eval' so that it can tail-recurse.
 
         PrimitiveFunc func ->
-            liftThrows $ func args
+            do
+                val <- liftThrows $ func args
+                env <- liftIO nullEnv
+                return (env, val)
 
         IOFunc func ->
-            func args
+            do
+                val <- func args
+                env <- liftIO nullEnv
+                return (env, val)
 
         _ ->
             undefined
