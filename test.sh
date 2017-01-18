@@ -142,7 +142,7 @@ parser_test "(a '(quoted (dotted . list)) test)" \
 parser_test "(a '(imbalanced parens)" \
 'Parse error at "lisp" (line 1, column 32):
 unexpected end of input
-expecting space or ")"'
+expecting space, ";" or ")"'
 
 
 #____________________________________________________________________________
