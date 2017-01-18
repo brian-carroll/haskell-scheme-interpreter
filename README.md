@@ -44,8 +44,14 @@ History
 
 Tail Call Optimisation
 ----------------------
-- This would be interesting. TCO kind of fascinates me for some reason.
-- Does implementing in Haskell give me this for free somehow?
+- Interesting. TCO kind of fascinates me for some reason.
+- [x] Detect tail calls
+- [x] Optimise tail calls
+    - Can't easily do tail recursion for the `eval` function, because its 
+        recursion needs to follow the structure of the Scheme code.
+    - But can make `apply` tail recursive and use it as a [trampoline](https://en.wikipedia.org/wiki/Tail_call#Through_trampolining)
+    - 3x reduction in memory usage but still eventually get stack overflow
+- [ ] Completely eliminate stack overflow for recursive functions
 
 
 Macro expansion
