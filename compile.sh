@@ -2,6 +2,7 @@
 
 if [ "$1" == "--clean" ]
 then
+    shift
     find .ghc ! -name .gitignore -type f | xargs rm -f
 fi
 
@@ -11,4 +12,5 @@ ghc --make \
     -outputdir ../.ghc \
     -W \
     -O2 \
-    Main.hs
+    Main.hs \
+    "$@"
