@@ -11,7 +11,7 @@ module Eval
 -- Libraries
 import Control.Monad.Error (throwError, liftM)
 import Control.Monad.Trans (liftIO)
-import Debug.Trace (trace)
+-- import Debug.Trace (trace)
 
 -- Local modules
 import LispTypes (LispVal (..), LispError (..))
