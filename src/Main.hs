@@ -53,10 +53,11 @@ runFile args =
             >>= hPutStrLn stdout
 
 
--- Apply (evalAndPrint env) to each line of input ('env' is passed in via >>=)
 runRepl :: IO ()
 runRepl =
-    primitiveBindings >>= until_ (== "quit") (readPrompt "Lisp>>> ") . evalAndPrint
+    do
+        env <- primitiveBindings
+        until_ (== "quit") (readPrompt "Lisp>>> ") (evalAndPrint env)
 
 
 -- -----
