@@ -11,7 +11,6 @@ import System.IO (IOMode (ReadMode, WriteMode), hGetLine, hPrint, hClose, stdin,
 import Control.Monad (liftM)
 import Control.Monad.Trans (liftIO)
 
-
 -- Local modules
 import LispTypes (LispVal (..), LispError (..), ThrowsError, IOThrowsError)
 import Eval.WeakTyping (eqv, equal, unpackBool, unpackNum, unpackStr)
@@ -185,6 +184,10 @@ boolBoolBinop = boolBinop unpackBool
 
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
-numericBinop _            []  = throwError $ NumArgs 2 []
-numericBinop _ singleVal@[_]  = throwError $ NumArgs 2 singleVal
-numericBinop op params        = mapM unpackNum params >>= return . Number . foldl1 op
+numericBinop op params        =
+    if length params /= 2 then
+        throwError $ NumArgs 2 params
+    else do
+        left <- unpackNum $ params !! 0
+        right <- unpackNum $ params !! 1
+        return $ Number $ left `op` right

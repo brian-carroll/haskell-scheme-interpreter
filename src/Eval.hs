@@ -11,6 +11,7 @@ module Eval
 -- Libraries
 import Control.Monad.Error (throwError, liftM)
 import Control.Monad.Trans (liftIO)
+-- import Debug.Trace (trace)
 
 -- Local modules
 import LispTypes (LispVal (..), LispError (..))
@@ -43,7 +44,13 @@ makeVarArgs =
 
 -- Evaluate a Lisp expression
 eval :: Env -> LispVal -> IOThrowsError LispVal
-eval env val =
+eval = evalHelp False
+
+evalTail :: Env -> LispVal -> IOThrowsError LispVal
+evalTail = evalHelp True
+
+evalHelp :: Bool -> Env -> LispVal -> IOThrowsError LispVal
+evalHelp isTailContext env val =
     case val of
         String _ ->
             return val
@@ -70,13 +77,13 @@ eval env val =
             return val
 
         List [Atom "if", pred, conseq, alt] ->
-            do 
+            do
                 result <- eval env pred
                 case result of
                     Bool False ->
-                        eval env alt
+                        evalHelp isTailContext env alt
                     _ ->
-                        eval env conseq
+                        evalHelp isTailContext env conseq
 
         List (Atom "if" : badArgList) ->
             throwError $ NumArgs 3 badArgList
@@ -107,12 +114,19 @@ eval env val =
 
         List (function : args) ->
             do
-                func <- eval env function
-                argVals <- mapM (eval env) args
-                apply func argVals
+                argVals <- mapM (evalHelp False env) args
+                if isTailContext then
+                    -- Tail call. Don't apply it just yet. Pop back up to outer `apply` first.
+                    -- This prevents the recursion from getting too deep, which avoids stack overflow.
+                    -- Too hard to refactor eval as tail recursive itself, so use trampoline style instead
+                    return $ List (function : argVals)
+                else do
+                    func <- eval env function
+                    apply func argVals
 
         badForm ->
             throwError $ BadSpecialForm "Unrecognized special form" badForm
+
 
 
 
@@ -139,18 +153,27 @@ apply lispfunc args =
                         Nothing ->
                             return env
 
-                evalBody env =
-                    liftM last $        -- keep the result of the last evaluation since it's the return value
-                        mapM (eval env) body    -- evaluate each form in the function body
             in
                 if not rightNumberOfArgs then
                     throwError $ NumArgs (toInteger $ length params) args
-                else
-                    (liftIO $               -- 3. Lift from IO into IOThrowsError
-                        bindVars closure $  -- 2. Combine the input parameters with the closure environment
-                        zip params args)    -- 1. Match up param names with given input values
-                    >>= bindVarArgs varargs -- 4. Combine varargs into the environment
-                    >>= evalBody            -- 5. Evaluate the function body
+                else do
+                    env <- (liftIO $                -- 3. Lift from IO into IOThrowsError
+                            bindVars closure $      -- 2. Combine the input parameters with the closure environment
+                            zip params args)        -- 1. Match up param names with given input values
+                            >>= bindVarArgs varargs -- 4. Combine varargs into the environment
+                    mapM (eval env) (init body)     -- 5. Evaluate all forms except the tail expression (mutate env)
+                    result <- evalTail env (last body)  -- 6. Evaluate tail expression
+                    case result of
+                        List (tailFuncName : tailCallArgs) ->
+                            -- Scheme function ends with a tail call, which we want to optimise.
+                            -- We have deliberately not evaluated the call yet, so as not to recurse too deep in `eval`.
+                            -- Need Haskell code path to have obvious tail recursion, so GHC will optimise it.
+                            -- (Pattern match could also match a list of values. Handle that later.)
+                            do
+                                tailCallFunc <- eval env tailFuncName
+                                apply tailCallFunc tailCallArgs
+                        _ ->
+                            return result
 
         PrimitiveFunc func ->
             liftThrows $ func args
@@ -159,4 +182,6 @@ apply lispfunc args =
             func args
 
         _ ->
-            undefined
+            -- If we end up here, it means we mistook a list for a tail call during the previous iteration.
+            -- But that's OK, we've caught it now. Just reassemble the list and return it.
+            return $ List (lispfunc : args)

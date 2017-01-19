@@ -9,14 +9,19 @@ module LispTypes
 
 import Text.ParserCombinators.Parsec (ParseError)
 import Control.Monad.Error (Error, noMsg, strMsg, ErrorT)
-import Data.IORef (IORef)
+import Data.IORef (IORef, readIORef)
 import System.IO (Handle)
+import System.IO.Unsafe (unsafePerformIO)
 
 
 -- Environment to store a map of Lisp variables
 -- Lisp variables are mutable. Use IORef to update them inside IO monad
 type Env =
     IORef [(String, IORef LispVal)]
+
+instance (Show a) => Show (IORef a) where
+    show a = show (unsafePerformIO (readIORef a))
+
 
 -- Type to allow us to throw LispErrors in the IO monad
 type IOThrowsError =
