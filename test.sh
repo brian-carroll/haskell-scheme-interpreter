@@ -22,7 +22,7 @@ function parser_test {
 
 function remove_prompt {
     local INPUT=$(cat /dev/stdin)
-    echo ${INPUT#"Lisp>>> "}
+    echo ${INPUT#"> "}
 }
 
 function last_result {

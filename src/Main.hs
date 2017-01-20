@@ -76,9 +76,14 @@ welcomeMessage =
     "-------------------------------------------------\n"
 
 
+prompt :: String
+prompt =
+    "> "
+
+
 loop :: Env -> InputT IO ()
 loop env = do
-    minput <- getInputLine "> "
+    minput <- getInputLine prompt
     case minput of
         Nothing ->
             return ()
@@ -92,6 +97,11 @@ loop env = do
                 loop env
 
 
+evalAndPrint :: Env -> String -> IO ()
+evalAndPrint env expr =
+    evalString env expr >>= putStrLn
+
+
 evalString :: Env -> String -> IO String
 evalString env expr =
     runIOThrows $ do
@@ -101,16 +111,3 @@ evalString env expr =
                 return ""
             Just lispVal ->
                 liftM show $ eval env lispVal
-
-
-evalAndPrint :: Env -> String -> IO ()
-evalAndPrint env expr =
-    evalString env expr >>= putStrLn
-
-
-until_ :: Monad m => (a -> Bool) -> m a -> (a -> m ()) -> m ()
-until_ pred prompt action = do
-   result <- prompt
-   if pred result
-      then return ()
-      else action result >> until_ pred prompt action
