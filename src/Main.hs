@@ -5,7 +5,7 @@ import System.Environment (getArgs)
 import System.IO (hPutStrLn, stdout)
 import Control.Monad (liftM)
 import Control.Monad.Trans (liftIO)
-import System.Console.Haskeline
+import System.Console.Haskeline (InputT, runInputT, defaultSettings, getInputLine)
 
 -- Local modules
 import Parser (readMaybeExpr)
