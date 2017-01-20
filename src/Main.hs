@@ -2,9 +2,10 @@ module Main where
 
 -- Libraries
 import System.Environment (getArgs)
-import System.IO (hFlush, hPutStrLn, stdout)
+import System.IO (hPutStrLn, stdout)
 import Control.Monad (liftM)
-
+import Control.Monad.Trans (liftIO)
+import System.Console.Haskeline
 
 -- Local modules
 import Parser (readMaybeExpr)
@@ -41,36 +42,54 @@ runOne expr =
 runFile :: [String] -> IO ()
 runFile args =
     let
-        firstArgLispVal =
-            String (args !! 0)
+        firstArg =
+            (args !! 0)
         otherArgsLispVal =
             List $ map String $ drop 1 args
-        loadCommandLisp =
-            List [Atom "load", firstArgLispVal]
     in do
         env <- primitiveBindings >>= flip bindVars [("args", otherArgsLispVal)] 
-        (runIOThrows $ liftM show $ eval env loadCommandLisp)
-            >>= hPutStrLn stdout
+        loadLispFile env firstArg >>= hPutStrLn stdout
 
 
 runRepl :: IO ()
 runRepl =
     do
+        putStrLn welcomeMessage
         env <- primitiveBindings
-        until_ (== "quit") (readPrompt "Lisp>>> ") (evalAndPrint env)
+        loadLispFile env "stdlib.scm"
+        runInputT defaultSettings (loop env)
+
+
+loadLispFile :: Env -> String -> IO String
+loadLispFile env filename =
+    runIOThrows $ liftM show $ eval env $ List [Atom "load", String filename]
 
 
 -- -----
 -- REPL
 -- -----
-flushStr :: String -> IO ()
-flushStr str =
-    putStr str >> hFlush stdout
+
+welcomeMessage :: String
+welcomeMessage =
+    "-------------------------------------------------\n" ++
+    "|        Brian's Scheme Interpreter REPL        |\n" ++
+    "-------------------------------------------------\n"
 
 
-readPrompt :: String -> IO String
-readPrompt prompt =
-    flushStr prompt >> getLine
+loop :: Env -> InputT IO ()
+loop env = do
+    minput <- getInputLine "> "
+    case minput of
+        Nothing ->
+            return ()
+
+        Just "quit" ->
+            return ()
+
+        Just input ->
+            do
+                liftIO $ evalAndPrint env input
+                loop env
 
 
 evalString :: Env -> String -> IO String
