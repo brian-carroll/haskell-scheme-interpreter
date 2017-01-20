@@ -40,7 +40,12 @@ History
 - How to store history list?
     - Arg to a recursive function?
     - Mutable variable?
+- Found a package to do all of this! Haskeline is used in Elm REPL.
 
+To do:
+- [x] Install Haskeline
+- [x] Set up basic version from docs example & make sure tests still pass
+- [ ] Handle Ctrl-C like Elm REPL. If text has been entered, just start a new line. If no text, quit.
 
 Tail Call Optimisation
 ----------------------
