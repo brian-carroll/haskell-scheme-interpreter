@@ -3,3 +3,5 @@
 *.ps
 *.aux
 .~lock.*
+.ghc/
+.stack-work/

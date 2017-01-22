@@ -115,14 +115,15 @@ evalHelp isTailContext env val =
         List (function : args) ->
             do
                 argVals <- mapM (evalHelp False env) args
-                if isTailContext then
-                    -- Tail call. Don't apply it just yet. Pop back up to outer `apply` first.
-                    -- This prevents the recursion from getting too deep, which avoids stack overflow.
-                    -- Too hard to refactor eval as tail recursive itself, so use trampoline style instead
-                    return $ List (function : argVals)
-                else do
-                    func <- eval env function
-                    apply func argVals
+                if isTailContext
+                    then
+                        -- Tail call. Don't apply it just yet. Pop back up to outer `apply` first.
+                        -- This prevents the recursion from getting too deep, which avoids stack overflow.
+                        -- Too hard to refactor eval as tail recursive itself, so use trampoline style instead
+                        return $ List (function : argVals)
+                    else do
+                        func <- eval env function
+                        apply func argVals
 
         badForm ->
             throwError $ BadSpecialForm "Unrecognized special form" badForm

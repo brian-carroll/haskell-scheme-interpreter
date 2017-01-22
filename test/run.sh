@@ -8,7 +8,7 @@ export TOP_PID=$$
 "$DIR"/../compile.sh
 
 function lisp {
-    "$DIR/../bin/lisp" "$@"
+    stack exec write-yourself-a-scheme "$@"
 }
 
 function should_be() {
